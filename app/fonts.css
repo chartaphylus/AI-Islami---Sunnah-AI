@@ -1,0 +1,9 @@
+/* Font LPMQ Isep Misbah (Standar Kemenag RI) */
+@font-face {
+    font-family: 'LPMQ Isep Misbah';
+    src: url('https://s.id/LPMQFONT') format('truetype');
+    /* Fallback/Placeholder URL logic */
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
