@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter, Amiri } from "next/font/google";
 import "./globals.css";
-import "./fonts.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navbar from "@/components/Navbar";
 import InstallPrompt from "../components/InstallPrompt";
@@ -16,6 +15,14 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+});
+
+const amiri = Amiri({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  variable: "--font-amiri",
+  display: "swap",
+  style: ["normal", "italic"],
 });
 
 export const viewport: Viewport = {
@@ -42,7 +49,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className="scroll-smooth" suppressHydrationWarning>
-      <body className={`${jakarta.variable} ${inter.variable} font-sans min-h-screen flex flex-col transition-colors duration-300`}>
+      <body className={`${jakarta.variable} ${inter.variable} ${amiri.variable} font-sans min-h-screen flex flex-col transition-colors duration-300`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -50,7 +57,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Navbar />
-          <main className="flex-grow pt-20">
+          <main className="flex-grow pb-24 md:pb-0">
             {children}
           </main>
           <InstallPrompt />

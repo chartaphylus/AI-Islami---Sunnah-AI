@@ -22,14 +22,14 @@ export async function POST(req: Request) {
         // Fallback: Rather than showing a scary error, allow the UI to render a polite message
         // This satisfies "jangan berikan pesan error namun bilang referensi jawaban tidak ditemukan"
         return NextResponse.json({
-            answer: `## ⚠️ Referensi Tidak Ditemukan
+            answer: `## 🔍 Referensi Tidak Ditemukan
 
-Mohon maaf, saat ini kami belum dapat menemukan referensi dalil yang spesifik untuk pertanyaan tersebut, atau sistem sedang mengalami kendala teknis.
+Mohon maaf, kami tidak dapat menemukan jawaban yang pasti di dalam database referensi terpercaya kami (Yufid, Rumaysho, Muslim.or.id, dll) untuk pertanyaan tersebut.
 
-**Saran:**
-- Coba gunakan kata kunci yang lebih umum.
-- Periksa kembali ejaan pertanyaan Anda.
-- Silakan coba beberapa saat lagi.
+**Saran langkah selanjutnya:**
+- Pastikan tidak ada kesalahan ketik (typo) pada kata kunci utama.
+- Coba gunakan kalimat tanya yang lebih sederhana atau umum.
+- Jika ini mengenai masalah fiqih kontemporer yang sangat spesifik, mungkin referensi digital kami belum mencakupnya secara mendalam.
 
 _Wallahu a'lam bish-shawab._`
         });

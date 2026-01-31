@@ -1,10 +1,31 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
+/* Font LPMQ Isep Misbah (Standar Kemenag RI) */
+@font-face {
+  font-family: 'LPMQ Isep Misbah';
+  src: url('https://s.id/LPMQFONT') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --font-sans: var(--font-jakarta);
   --font-serif: var(--font-inter);
-  --font-arabic: 'LPMQ Isep Misbah', 'Traditional Arabic', 'Amiri', serif;
+  --font-arabic: 'Amiri', 'LPMQ Isep Misbah', 'Traditional Arabic', serif;
+  --font-amiri: 'Amiri', serif;
+}
+
+@layer utilities {
+  .custom-scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .custom-scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 /* Define dark mode variant for Tailwind v4 + next-themes */

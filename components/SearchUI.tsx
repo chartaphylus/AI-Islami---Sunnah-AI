@@ -138,7 +138,7 @@ export default function SearchUI() {
             )}
 
             {answer && !loading && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
+                <div className="space-y-6 pb-32 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
                     {/* AI Answer Section */}
                     <div className="glass-card rounded-3xl p-8 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-100/50 dark:bg-emerald-900/20 rounded-full blur-3xl -z-10 -mr-16 -mt-16 pointer-events-none"></div>
@@ -206,7 +206,7 @@ export default function SearchUI() {
                                         // Case 1: Pure Arabic Block (Verse/Hadith only)
                                         if (isBlockArabic) {
                                             return (
-                                                <p className="font-arabic text-3xl md:text-3xl text-right leading-[2.2] text-gray-900 dark:text-white font-normal my-6 px-4 py-2 border-r-4 border-emerald-500 bg-emerald-50/30 dark:bg-emerald-900/10 rounded-l-xl" dir="rtl" {...props}>
+                                                <p className="font-arabic text-2xl md:text-3xl text-right leading-[2.2] md:leading-[2.5] text-gray-900 dark:text-white font-normal my-8 px-5 py-4 border-r-4 border-emerald-500 bg-emerald-50/30 dark:bg-emerald-900/10 rounded-l-2xl shadow-sm" dir="rtl" {...props}>
                                                     {children}
                                                 </p>
                                             );
@@ -223,7 +223,7 @@ export default function SearchUI() {
                                                 return parts.map((part, i) => {
                                                     // Check if this part has significant Arabic chars
                                                     if (/[\u0600-\u06FF]/.test(part) && part.trim().length > 1) {
-                                                        return <span key={i} className="font-arabic text-xl px-1 leading-normal inline-block" dir="rtl">{part}</span>;
+                                                        return <span key={i} className="font-arabic text-xl px-1.5 leading-normal inline-block text-emerald-700 dark:text-emerald-400" dir="rtl">{part}</span>;
                                                     }
                                                     return part;
                                                 });

@@ -3,7 +3,7 @@
 import { useTheme } from "next-themes";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Moon, Sun, Menu, X } from "lucide-react";
+import { Moon, Sun, Home, BookOpen, Heart, Calendar } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function Navbar() {
@@ -15,9 +15,10 @@ export default function Navbar() {
     useEffect(() => setMounted(true), []);
 
     const navItems = [
-        { name: 'Home', path: '/' },
-        { name: "Al-Qur'an", path: '/quran' },
-        { name: 'Kalender', path: '/calendar' },
+        { name: 'Home', path: '/', icon: Home },
+        { name: 'Quran', path: '/quran', icon: BookOpen },
+        { name: 'Doa', path: '/doa', icon: Heart },
+        { name: 'Calendar', path: '/calendar', icon: Calendar },
     ];
 
     if (!mounted) return null;
@@ -27,10 +28,13 @@ export default function Navbar() {
             <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-md"></div>
             <div className="max-w-5xl mx-auto px-4 h-16 relative flex items-center justify-between">
 
-                {/* Logo */}
-                <Link href="/" className="group flex items-center gap-2 relative z-10" onClick={() => setIsOpen(false)}>
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white font-amiri font-bold text-2xl shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform duration-300 border border-emerald-400/20">
-                        S
+                <Link href="/" className="group flex items-center gap-3 relative z-10" onClick={() => setIsOpen(false)}>
+                    <div className="relative w-10 h-10 md:w-11 md:h-11 rounded-xl overflow-hidden shadow-lg shadow-emerald-500/10 group-hover:scale-105 transition-all duration-300">
+                        <img
+                            src="/logo.png"
+                            alt="Salaf.AI Logo"
+                            className="w-full h-full object-cover"
+                        />
                     </div>
                     <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">
                         Salaf<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">.AI</span>
@@ -60,45 +64,42 @@ export default function Navbar() {
                 <div className="flex items-center gap-2 relative z-10">
                     <button
                         onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-500 dark:text-gray-400 transition-colors"
+                        className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-500 dark:text-gray-400 transition-all active:scale-90"
                         aria-label="Toggle Theme"
                     >
-                        {resolvedTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                    </button>
-
-                    {/* Mobile Menu Button */}
-                    <button
-                        onClick={() => setIsOpen(!isOpen)}
-                        className="md:hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-500 dark:text-gray-400"
-                    >
-                        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        {resolvedTheme === 'dark' ? <Sun className="w-5 h-5 md:w-4 md:h-4" /> : <Moon className="w-5 h-5 md:w-4 md:h-4" />}
                     </button>
                 </div>
             </div>
 
-            {/* Mobile Menu Overlay */}
-            {isOpen && (
-                <div className="md:hidden absolute top-16 left-0 w-full bg-white dark:bg-neutral-950 border-b border-gray-100 dark:border-neutral-800 shadow-xl animate-in slide-in-from-top-5 duration-200">
-                    <div className="flex flex-col p-4 space-y-2">
-                        {navItems.map((item) => {
-                            const isActive = pathname === item.path;
-                            return (
-                                <Link
-                                    key={item.path}
-                                    href={item.path}
-                                    onClick={() => setIsOpen(false)}
-                                    className={`px-4 py-3 rounded-xl text-base font-medium transition-colors ${isActive
-                                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
-                                        : 'text-gray-600 dark:text-gray-400'
-                                        }`}
-                                >
+            {/* Bottom Navigation (Mobile Only) */}
+            <div className="md:hidden fixed bottom-0 left-0 w-full z-50 transition-all duration-300">
+                <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-t border-gray-100 dark:border-white/5"></div>
+                <div className="relative flex items-center justify-around h-20 px-6 pb-2">
+                    {navItems.map((item) => {
+                        const isActive = pathname === item.path || (item.path !== '/' && pathname?.startsWith(item.path));
+                        const Icon = item.icon;
+                        return (
+                            <Link
+                                key={item.path}
+                                href={item.path}
+                                className={`flex flex-col items-center justify-center gap-1.5 transition-all duration-300 relative ${isActive
+                                    ? 'text-emerald-600 dark:text-emerald-400 scale-110'
+                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                                    }`}
+                            >
+                                {isActive && (
+                                    <div className="absolute -top-3 w-8 h-1 bg-emerald-500 rounded-full blur-[2px] animate-in fade-in zoom-in duration-500"></div>
+                                )}
+                                <Icon className={`w-6 h-6 ${isActive ? 'fill-current/10' : ''}`} />
+                                <span className={`text-[10px] font-bold tracking-tight uppercase ${isActive ? 'opacity-100' : 'opacity-60'}`}>
                                     {item.name}
-                                </Link>
-                            );
-                        })}
-                    </div>
+                                </span>
+                            </Link>
+                        );
+                    })}
                 </div>
-            )}
+            </div>
         </nav>
     );
 }

@@ -12,8 +12,9 @@ export default function Home() {
       {/* Main Content */}
       <div className="w-full max-w-4xl flex flex-col items-center text-center space-y-8 z-10">
 
+
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-emerald-100 dark:border-white/5 backdrop-blur-sm text-emerald-700 dark:text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-2 animate-in fade-in zoom-in duration-500">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-emerald-100 dark:border-white/5 backdrop-blur-sm text-emerald-700 dark:text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-2 animate-in fade-in zoom-in duration-500 delay-100">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -38,7 +39,7 @@ export default function Home() {
       </div>
 
       {/* Footer / Credits */}
-      <footer className="absolute bottom-6 text-center space-y-2 animate-in fade-in duration-1000 delay-500">
+      <footer className="mt-12 mb-8 text-center space-y-2 animate-in fade-in duration-1000 delay-500">
         <p className="text-xs text-gray-400 dark:text-gray-600">Sumber Data: Yufid, Rumaysho, Muslim.or.id, Almanhaj</p>
         <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600/50 dark:text-emerald-400/50">
           By. M.K Bahtiar

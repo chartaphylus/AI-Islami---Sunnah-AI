@@ -27,7 +27,7 @@ export default function InstallPrompt() {
     if (!showPrompt) return null;
 
     return (
-        <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5 duration-500">
+        <div className="fixed bottom-24 md:bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5 duration-500">
             <div className="bg-white dark:bg-neutral-900 border border-emerald-100 dark:border-emerald-900 rounded-2xl shadow-2xl p-4 flex flex-col gap-3 relative">
                 <button
                     onClick={() => setShowPrompt(false)}
@@ -37,7 +37,7 @@ export default function InstallPrompt() {
                 </button>
 
                 <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                    <div className="w-12 h-12 bg-[#00897b] rounded-xl flex items-center justify-center text-white font-serif font-bold text-xl shadow-lg">
                         S
                     </div>
                     <div>
