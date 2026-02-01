@@ -117,32 +117,32 @@ export default function CalendarPage() {
         <div className="min-h-screen px-4 max-w-5xl mx-auto pb-24 pt-20">
             {/* Header & Controls */}
             <div className="flex flex-col gap-6 mb-8 mt-2 animate-in fade-in slide-in-from-top-5">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                                Kalender
-                            </h1>
-                            {!location && (
-                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider border border-amber-100 dark:border-amber-900/30">
-                                    <MapPin className="w-3 h-3" />
-                                    Mendeteksi...
-                                </div>
-                            )}
-                            {location && (
-                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-100 dark:border-emerald-900/30">
-                                    <MapPin className="w-3 h-3" />
-                                    Lokasi Aktif
-                                </div>
-                            )}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                            Kalender
+                        </h1>
+                        {!location && (
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider border border-amber-100 dark:border-amber-900/30">
+                                <MapPin className="w-3 h-3" />
+                                Mendeteksi...
+                            </div>
+                        )}
+                        {location && (
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-100 dark:border-emerald-900/30">
+                                <MapPin className="w-3 h-3" />
+                                Lokasi Aktif
+                            </div>
+                        )}
+                        <div className="w-full md:w-auto mt-1 md:mt-0">
+                            <p className="text-emerald-600 dark:text-emerald-500 font-medium text-sm md:text-base">
+                                {currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                            </p>
                         </div>
-                        <p className="text-emerald-600 dark:text-emerald-500 font-medium text-sm md:text-base">
-                            {currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-                        </p>
                     </div>
                     <Link
                         href="/qibla"
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all border border-emerald-100 dark:border-neutral-800"
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all border border-emerald-100 dark:border-neutral-800 w-fit"
                     >
                         <span>Arah Kiblat</span>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
@@ -160,16 +160,16 @@ export default function CalendarPage() {
                                 <div
                                     key={time}
                                     className={`flex flex-col items-center justify-center py-2.5 rounded-xl border transition-all duration-300 ${isCurrent
-                                        ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20 scale-105 z-10'
+                                        ? 'bg-white dark:bg-neutral-900 border-emerald-500 shadow-lg shadow-emerald-500/10 scale-105 z-10'
                                         : isNext
-                                            ? 'bg-white dark:bg-neutral-900 border-emerald-200 dark:border-emerald-800 ring-1 ring-emerald-500/20'
+                                            ? 'bg-white dark:bg-neutral-900 border-amber-200 dark:border-amber-800 ring-1 ring-amber-500/20'
                                             : 'bg-white dark:bg-neutral-900 border-gray-100 dark:border-neutral-800'
                                         }`}
                                 >
-                                    <span className={`text-[9px] font-bold uppercase tracking-wider mb-0.5 ${isCurrent ? 'text-emerald-100' : 'text-gray-400'}`}>
-                                        {time === 'Fajr' ? 'Subuh' : time === 'Dhuhr' ? 'Dzuhur' : time}
+                                    <span className={`text-[9px] font-bold uppercase tracking-wider mb-0.5 ${isCurrent ? 'text-emerald-600' : isNext ? 'text-amber-600' : 'text-gray-400'}`}>
+                                        {isCurrent ? 'Sekarang' : isNext ? 'Next' : (time === 'Fajr' ? 'Subuh' : time === 'Dhuhr' ? 'Dzuhur' : time)}
                                     </span>
-                                    <span className={`text-xs md:text-lg font-bold ${isCurrent ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+                                    <span className={`text-xs md:text-lg font-bold ${isCurrent ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>
                                         {todayData.timings[time as keyof typeof todayData.timings].split(' ')[0]}
                                     </span>
                                 </div>
