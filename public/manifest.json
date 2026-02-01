@@ -1,7 +1,7 @@
 {
-    "name": "Salaf.AI Search Engine",
-    "short_name": "Salaf.AI",
-    "description": "Mesin pencari syariah berbasis AI dengan rujukan manhaj Salaf.",
+    "name": "Haditha – Asisten Ilmu & Hafalan Sunnah",
+    "short_name": "Haditha",
+    "description": "ekosistem Islami yang menjembatani kemurnian Manhaj Salaf dengan teknologi.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",

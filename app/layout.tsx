@@ -33,8 +33,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Salaf.AI - Mesin Pencari Islam",
-  description: "Cari jawaban syariah berdasarkan Qur'an & Sunnah dengan referensi terpercaya.",
+  title: "Haditha - Asisten Ilmu & Hafalan Sunnah",
+  description: "Asisten cerdas untuk mendalami Al-Qur'an dan Hadits dengan teknologi AI.",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.png",

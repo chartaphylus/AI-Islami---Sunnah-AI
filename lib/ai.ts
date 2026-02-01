@@ -79,8 +79,8 @@ GAYA BAHASA: Akademis, Bernas, dan Tidak Ragu.`
                 {
                     headers: {
                         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-                        "HTTP-Referer": "https://syariahai.com",
-                        "X-Title": "Salaf.AI",
+                        "HTTP-Referer": "https://haditha.com",
+                        "X-Title": "Haditha",
                         "Content-Type": "application/json"
                     },
                     timeout: 20000 // 20s timeout

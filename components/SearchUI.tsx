@@ -24,7 +24,7 @@ export default function SearchUI() {
 
     const handleCopy = () => {
         if (!answer) return;
-        const textToCopy = `*Pertanyaan:* ${query}\n\n*Jawaban:*\n${answer}\n\n_Sumber: Salaf.AI_`;
+        const textToCopy = `*Pertanyaan:* ${query}\n\n*Jawaban:*\n${answer}\n\n_Sumber: Haditha_`;
         navigator.clipboard.writeText(textToCopy);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
@@ -32,7 +32,7 @@ export default function SearchUI() {
 
     const handleShareWhatsApp = () => {
         if (!answer) return;
-        const text = `*Pertanyaan:* ${query}\n\n*Jawaban:*\n${answer}\n\n_Sumber: Salaf.AI_`;
+        const text = `*Pertanyaan:* ${query}\n\n*Jawaban:*\n${answer}\n\n_Sumber: Haditha_`;
         const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
         window.open(url, '_blank');
     };

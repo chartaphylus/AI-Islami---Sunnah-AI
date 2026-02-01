@@ -1,61 +1,59 @@
-# AI Islami - Sunnah AI
+# Haditha – Asisten Ilmu & Hafalan Sunnah
 
-AI Islami (Sunnah AI) is a modern, comprehensive Islamic companion application built with Next.js. It integrates advanced AI capabilities with essential Islamic resources to help users learn and practice their faith with ease and precision.
-
----
-
-## 🚀 Key Features
-
-### 💬 AI Chatbot (Syariah AI)
-- Get instant, evidence-based answers to Islamic questions.
-- Powered by modern AI for contextual and accurate responses.
-
-### 📖 Interactive Quran
-- Complete Quranic text with clear Arabic script.
-- Integrated audio player for listening to recitations.
-- Search functionality to find specific surahs or verses.
-
-### 📜 Hadith Encyclopedia
-- **Kutubut Tis'ah**: Access nine major hadith books.
-- **Arbain An-Nawawi**: Study the 40 essential prophetic traditions.
-- **Hadith Games**: Interactive ways to learn and memorize hadith.
-
-### 🕋 Qibla Finder
-- Real-time digital compass to determine the direction of the Kaaba.
-- Optimized for mobile devices for accurate on-the-go usage.
-
-### 🗓️ Islamic Calendar
-- View Hijri and Gregorian dates side-by-side.
-- Track important Islamic events throughout the year.
-
-### 🤲 Doa & Adhkar
-- Comprehensive collection of daily prayers and remembrances (Dhkr).
+Haditha adalah aplikasi ekosistem Islami yang menjembatani kemurnian Manhaj Salaf dengan kecanggihan kecerdasan buatan (AI). Dirancang untuk penuntut ilmu yang ingin mendalami Al-Qur’an dan Hadits dengan cara yang interaktif, akurat, dan modern.
 
 ---
 
-## 🛠️ Tech Stack
+## 🚀 Fitur Utama
+
+### 💬 Haditha AI (Assistant)
+- Dapatkan jawaban instan berbasis dalil yang presisi.
+- Menggunakan teknologi AI modern untuk memahami konteks pertanyaan.
+- Referensi diambil dari sumber terpercaya (Manhaj Salaf).
+
+### 📖 Al-Qur'an Interaktif
+- Mushaf digital dengan rasm Utsmani yang jelas.
+- Fitur audio player untuk mendengarkan tilawah.
+- Pencarian surat dan ayat.
+
+### 📜 Ensiklopedia Hadits
+- **Kutubut Tis'ah**: Akses ke 9 kitab induk hadits.
+- **Arba'in Nawawi**: Pelajari 42 hadits pokok ajaran Islam.
+- **Game Hadits**: Cara seru untuk menghafal dan menguji wawasan hadits.
+
+### 🕋 Pencari Kiblat & Jadwal Sholat
+- Kompas digital real-time untuk menentukan arah Ka'bah.
+- Jadwal sholat akurat sesual lokasi dengan hitung mundur.
+
+### 🗓️ Kalender Hijriyah
+- Penanggalan Islam (Hijriyah) bersanding dengan Masehi.
+- Informasi hari-hari penting Islam.
+
+---
+
+## 🛠️ Teknologi
 
 - **Framework**: [Next.js](https://nextjs.org/) (App Router)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **State Management & Data Fetching**: [React](https://react.dev/), [Axios](https://axios-http.com/)
+- **State Management**: [React](https://react.dev/), [Axios](https://axios-http.com/)
 - **Icons**: [Lucide React](https://lucide.dev/)
-- **Text Processing**: [Cheerio](https://cheerio.js.org/), [React Markdown](https://github.com/remarkjs/react-markdown)
-- **Deployment**: Optimized for [Vercel](https://vercel.com/)
+- **AI Integration**: OpenRouter API
+- **Deployment**: [Vercel](https://vercel.com/)
 
 ---
 
-## ⚙️ Getting Started
+## ⚙️ Cara Menjalankan
 
-### Prerequisites
-- Node.js 18.x or later
-- npm, yarn, or pnpm
+### Prasyarat
+- Node.js 18.x atau terbaru
+- npm
 
-### Installation
+### Langkah Instalasi
 
-1. **Clone the repository**:
+1. **Clone repository**:
    ```bash
-   git clone name repository
-   cd name repository
+   git clone [repository-url]
+   cd haditha
    ```
 
 2. **Install dependencies**:
@@ -63,28 +61,30 @@ AI Islami (Sunnah AI) is a modern, comprehensive Islamic companion application b
    npm install
    ```
 
-3. **Set up environment variables**:
-   Create a `.env.local` file in the root directory and add your necessary API keys and configuration.
+3. **Setup Environment**:
+   Buat file `.env.local` di root folder dan tambahkan API Key yang diperlukan.
 
-4. **Run the development server**:
+4. **Jalankan server development**:
    ```bash
    npm run dev
    ```
 
-5. **Open the app**:
-   Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+5. **Buka aplikasi**:
+   Akses [http://localhost:3000](http://localhost:3000) di browser Anda.
 
 ---
 
-## 📂 Project Structure
+## 📂 Struktur Proyek
 
-- `/app`: Next.js App Router pages and layouts.
-- `/components`: Reusable UI components.
-- `/lib`: Helper functions and utility classes.
-- `/public`: Static assets (images, icons, etc.).
+- `/app`: Halaman dan layout Next.js (App Router).
+- `/components`: Komponen UI yang dapat digunakan kembali.
+- `/lib`: Fungsi bantu dan utilitas.
+- `/public`: Aset statis.
+- `/hooks`: Custom hooks (seperti `usePrayerTimes`).
 
 ---
 
-## 🛡️ License
+## 🛡️ Lisensi
 
-This project is for portfolio purposes. Please contact the owner for usage permissions.
+Proyek ini dikembangkan oleh **Salafy Tech** (M.K Bahtiar).
+Untuk portofolio dan demonstrasi teknologi.

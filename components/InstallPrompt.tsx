@@ -41,7 +41,7 @@ export default function InstallPrompt() {
                         S
                     </div>
                     <div>
-                        <h4 className="font-bold text-gray-900 dark:text-white">Install Salaf.AI</h4>
+                        <h4 className="font-bold text-gray-900 dark:text-white">Install Haditha</h4>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Akses lebih cepat & tanpa internet browsing bar.</p>
                     </div>
                 </div>

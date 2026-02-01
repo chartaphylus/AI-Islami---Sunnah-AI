@@ -53,34 +53,7 @@ export default function HadithLandingPage() {
                         </div>
                     </Link>
 
-                    {/* Kalkulator Syariah Card (NEW) */}
-                    <Link
-                        href="/hadits/calculator"
-                        className="group relative bg-white dark:bg-neutral-900 rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 border border-gray-200 dark:border-neutral-800 shadow-sm md:shadow-xl shadow-amber-500/5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-300 overflow-hidden"
-                    >
-                        <div className="absolute top-0 right-0 w-24 h-24 md:w-40 md:h-40 bg-gradient-to-br from-amber-400 to-orange-500 opacity-10 rounded-bl-[100%] group-hover:scale-110 transition-transform duration-500"></div>
-
-                        <div className="relative z-10 flex flex-row md:flex-col h-full items-center md:items-start gap-4 md:gap-0 md:justify-between">
-                            <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-800">
-                                <Calculator className="w-6 h-6 md:w-7 md:h-7" />
-                            </div>
-                            <div className="flex-grow space-y-1 md:space-y-4 md:mt-4">
-                                <h3 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                                    Kalkulator Syariah
-                                </h3>
-                                <p className="text-xs md:text-base text-gray-500 dark:text-gray-400 leading-snug md:leading-relaxed line-clamp-2 md:line-clamp-none">
-                                    Hitung Zakat & Waris.
-                                </p>
-                            </div>
-                            <div className="hidden md:flex mt-8 items-center gap-2 text-sm font-bold text-amber-600 dark:text-amber-400 group-hover:gap-3 transition-all">
-                                <span>Hitung Sekarang</span>
-                                <ChevronRight className="w-4 h-4" />
-                            </div>
-                        </div>
-                    </Link>
-
                     {/* Kutubut Tis'ah Card */}
-
                     <Link
                         href="/hadits/kutubut-tisah"
                         className="group relative bg-white dark:bg-neutral-900 rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 border border-gray-200 dark:border-neutral-800 shadow-sm md:shadow-xl shadow-blue-500/5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden"

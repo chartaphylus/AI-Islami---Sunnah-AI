@@ -33,12 +33,12 @@ export default function Navbar() {
                     <div className="relative w-10 h-10 md:w-11 md:h-11 rounded-xl overflow-hidden shadow-lg shadow-emerald-500/10 group-hover:scale-105 transition-all duration-300">
                         <img
                             src="/logo.png"
-                            alt="Salaf.AI Logo"
+                            alt="Haditha Logo"
                             className="w-full h-full object-cover"
                         />
                     </div>
                     <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">
-                        Salaf<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">.AI</span>
+                        Haditha
                     </span>
                 </Link>
 
