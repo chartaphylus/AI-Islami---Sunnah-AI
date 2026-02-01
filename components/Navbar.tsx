@@ -16,7 +16,7 @@ export default function Navbar() {
 
     const navItems = [
         { name: 'Home', path: '/', icon: Home },
-        { name: 'Quran', path: '/quran', icon: BookOpen },
+        { name: 'Al-Qur\'an', path: '/quran', icon: BookOpen },
         { name: 'Hadits', path: '/hadits', icon: Book },
         { name: 'Doa', path: '/doa', icon: Heart },
         { name: 'Calendar', path: '/calendar', icon: Calendar },

@@ -155,20 +155,35 @@ export default function CalendarPage() {
                         {['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].map((time) => {
                             const isCurrent = prayerStatus.current === time;
                             const isNext = prayerStatus.next === time;
+                            const prayerName = time === 'Fajr' ? 'Subuh' : time === 'Dhuhr' ? 'Dzuhur' : time;
 
                             return (
                                 <div
                                     key={time}
-                                    className={`flex flex-col items-center justify-center py-2.5 rounded-xl border transition-all duration-300 ${isCurrent
+                                    className={`relative flex flex-col items-center justify-center py-2.5 rounded-xl border transition-all duration-300 overflow-hidden ${isCurrent
                                         ? 'bg-white dark:bg-neutral-900 border-emerald-500 shadow-lg shadow-emerald-500/10 scale-105 z-10'
                                         : isNext
                                             ? 'bg-white dark:bg-neutral-900 border-amber-200 dark:border-amber-800 ring-1 ring-amber-500/20'
                                             : 'bg-white dark:bg-neutral-900 border-gray-100 dark:border-neutral-800'
                                         }`}
                                 >
-                                    <span className={`text-[9px] font-bold uppercase tracking-wider mb-0.5 ${isCurrent ? 'text-emerald-600' : isNext ? 'text-amber-600' : 'text-gray-400'}`}>
-                                        {isCurrent ? 'Sekarang' : isNext ? 'Next' : (time === 'Fajr' ? 'Subuh' : time === 'Dhuhr' ? 'Dzuhur' : time)}
+                                    {/* Status Label (Floating Top) */}
+                                    {(isCurrent || isNext) && (
+                                        <div className={`absolute top-0 inset-x-0 h-1 ${isCurrent ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                    )}
+
+                                    {(isCurrent || isNext) && (
+                                        <span className={`text-[8px] font-black uppercase tracking-widest mb-0.5 ${isCurrent ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                            {isCurrent ? 'SEKARANG' : 'NEXT'}
+                                        </span>
+                                    )}
+
+                                    {/* Prayer Name */}
+                                    <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wider ${isCurrent || isNext ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
+                                        {prayerName}
                                     </span>
+
+                                    {/* Time */}
                                     <span className={`text-xs md:text-lg font-bold ${isCurrent ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>
                                         {todayData.timings[time as keyof typeof todayData.timings].split(' ')[0]}
                                     </span>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { BookOpen, Library, ChevronRight, Play, Sparkles } from 'lucide-react';
+import { BookOpen, Library, ChevronRight, Play, Sparkles, Calculator } from 'lucide-react';
 
 export default function HadithLandingPage() {
     return (
@@ -26,7 +26,61 @@ export default function HadithLandingPage() {
             {/* Collections Grid */}
             <div className="max-w-4xl mx-auto px-4 pb-20">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
+
+                    {/* Game Hadits Card */}
+                    <Link
+                        href="/hadits/game"
+                        className="group relative bg-white dark:bg-neutral-900 rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 border border-gray-200 dark:border-neutral-800 shadow-sm md:shadow-xl shadow-emerald-500/5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-300 overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 w-24 h-24 md:w-40 md:h-40 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-10 rounded-bl-[100%] group-hover:scale-110 transition-transform duration-500"></div>
+
+                        <div className="relative z-10 flex flex-row md:flex-col h-full items-center md:items-start gap-4 md:gap-0 md:justify-between">
+                            <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-800">
+                                <Play className="w-5 h-5 md:w-6 md:h-6 fill-current translate-x-0.5" />
+                            </div>
+                            <div className="flex-grow space-y-1 md:space-y-4 md:mt-4">
+                                <h3 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                    Game Hadits
+                                </h3>
+                                <p className="text-xs md:text-base text-gray-500 dark:text-gray-400 leading-snug md:leading-relaxed line-clamp-2 md:line-clamp-none">
+                                    Uji Hafalan Arba'in.
+                                </p>
+                            </div>
+                            <div className="hidden md:flex mt-8 items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 group-hover:gap-3 transition-all">
+                                <span>Main Sekarang</span>
+                                <ChevronRight className="w-4 h-4" />
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Kalkulator Syariah Card (NEW) */}
+                    <Link
+                        href="/hadits/calculator"
+                        className="group relative bg-white dark:bg-neutral-900 rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 border border-gray-200 dark:border-neutral-800 shadow-sm md:shadow-xl shadow-amber-500/5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-300 overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 w-24 h-24 md:w-40 md:h-40 bg-gradient-to-br from-amber-400 to-orange-500 opacity-10 rounded-bl-[100%] group-hover:scale-110 transition-transform duration-500"></div>
+
+                        <div className="relative z-10 flex flex-row md:flex-col h-full items-center md:items-start gap-4 md:gap-0 md:justify-between">
+                            <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-800">
+                                <Calculator className="w-6 h-6 md:w-7 md:h-7" />
+                            </div>
+                            <div className="flex-grow space-y-1 md:space-y-4 md:mt-4">
+                                <h3 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                                    Kalkulator Syariah
+                                </h3>
+                                <p className="text-xs md:text-base text-gray-500 dark:text-gray-400 leading-snug md:leading-relaxed line-clamp-2 md:line-clamp-none">
+                                    Hitung Zakat & Waris.
+                                </p>
+                            </div>
+                            <div className="hidden md:flex mt-8 items-center gap-2 text-sm font-bold text-amber-600 dark:text-amber-400 group-hover:gap-3 transition-all">
+                                <span>Hitung Sekarang</span>
+                                <ChevronRight className="w-4 h-4" />
+                            </div>
+                        </div>
+                    </Link>
+
                     {/* Kutubut Tis'ah Card */}
+
                     <Link
                         href="/hadits/kutubut-tisah"
                         className="group relative bg-white dark:bg-neutral-900 rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 border border-gray-200 dark:border-neutral-800 shadow-sm md:shadow-xl shadow-blue-500/5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden"
@@ -91,41 +145,6 @@ export default function HadithLandingPage() {
                             </div>
                             <div className="hidden md:flex mt-8 items-center gap-2 text-sm font-bold text-blue-600 dark:text-blue-400 group-hover:gap-3 transition-all">
                                 <span>Mulai Membaca</span>
-                                <ChevronRight className="w-4 h-4" />
-                            </div>
-                        </div>
-                    </Link>
-
-                    {/* Game Hadits Card - Now White with Emerald Accents */}
-                    <Link
-                        href="/hadits/game"
-                        className="group relative bg-white dark:bg-neutral-900 rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 border border-gray-200 dark:border-neutral-800 shadow-sm md:shadow-xl shadow-emerald-500/5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-300 overflow-hidden"
-                    >
-                        <div className="absolute top-0 right-0 w-24 h-24 md:w-40 md:h-40 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-10 rounded-bl-[100%] group-hover:scale-110 transition-transform duration-500"></div>
-
-                        <div className="relative z-10 flex flex-row md:flex-col h-full items-center md:items-start gap-4 md:gap-0 md:justify-between">
-
-                            {/* Icon */}
-                            <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-800">
-                                <Play className="w-5 h-5 md:w-6 md:h-6 fill-current translate-x-0.5" />
-                            </div>
-
-                            {/* Content */}
-                            <div className="flex-grow space-y-1 md:space-y-4 md:mt-4">
-                                <h3 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                                    Game Hadits
-                                </h3>
-                                <p className="text-xs md:text-base text-gray-500 dark:text-gray-400 leading-snug md:leading-relaxed line-clamp-2 md:line-clamp-none">
-                                    Uji Hafalan Arba'in.
-                                </p>
-                            </div>
-
-                            {/* Arrow */}
-                            <div className="md:hidden">
-                                <ChevronRight className="w-5 h-5 text-gray-300" />
-                            </div>
-                            <div className="hidden md:flex mt-8 items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 group-hover:gap-3 transition-all">
-                                <span>Main Sekarang</span>
                                 <ChevronRight className="w-4 h-4" />
                             </div>
                         </div>

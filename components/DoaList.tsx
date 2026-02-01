@@ -44,59 +44,64 @@ export default function DoaList({ doaList }: DoaListProps) {
     }, [doaList, searchQuery, selectedGrup, selectedTag]);
 
     return (
-        <div className="space-y-8">
-            {/* Search and Filters */}
-            <div className="space-y-4 max-w-5xl mx-auto">
-                {/* Search Input */}
-                <div className="relative group">
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Cari doa berdasarkan nama, isi, atau kategori..."
-                        className="w-full px-6 py-4 bg-white dark:bg-[#0a0a0a] border border-gray-200 dark:border-neutral-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all text-gray-800 dark:text-gray-100 placeholder-gray-500 shadow-sm"
-                    />
-                </div>
-
-                {/* Dropdown Filters */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="relative">
-                        <select
-                            value={selectedGrup}
-                            onChange={(e) => setSelectedGrup(e.target.value)}
-                            className="w-full appearance-none px-5 py-3.5 bg-white dark:bg-[#0a0a0a] border border-gray-200 dark:border-neutral-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm text-gray-700 dark:text-gray-300 cursor-pointer shadow-sm"
-                        >
-                            <option value="all">Semua Kategori</option>
-                            {groups.map((grup) => (
-                                <option key={grup} value={grup}>
-                                    {grup}
-                                </option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <div className="space-y-6">
+            {/* Search & Filters */}
+            <div className="max-w-5xl mx-auto">
+                <div className="flex flex-col gap-3">
+                    {/* Search Input (Matches Al-Quran Style) */}
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-emerald-500 transition-colors">
+                            <Search className="w-4 h-4 md:w-5 md:h-5" />
+                        </div>
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Cari doa harian..."
+                            className="w-full pl-11 pr-4 py-3 md:py-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm md:text-base text-gray-800 dark:text-gray-200 placeholder-gray-500 shadow-sm"
+                        />
                     </div>
 
-                    <div className="relative">
-                        <select
-                            value={selectedTag}
-                            onChange={(e) => setSelectedTag(e.target.value)}
-                            className="w-full appearance-none px-5 py-3.5 bg-white dark:bg-[#0a0a0a] border border-gray-200 dark:border-neutral-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm text-gray-700 dark:text-gray-300 cursor-pointer shadow-sm"
-                        >
-                            <option value="all">Semua Tag</option>
-                            {tags.map((tag) => (
-                                <option key={tag} value={tag}>
-                                    {tag}
-                                </option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    {/* Filters */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="relative">
+                            <select
+                                value={selectedGrup}
+                                onChange={(e) => setSelectedGrup(e.target.value)}
+                                className="w-full appearance-none pl-4 pr-10 py-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/10 text-[10px] md:text-xs font-bold text-gray-600 dark:text-gray-300 cursor-pointer shadow-sm truncate"
+                            >
+                                <option value="all">Kategori</option>
+                                {groups.map((grup) => (
+                                    <option key={grup} value={grup}>
+                                        {grup}
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        </div>
+
+                        <div className="relative">
+                            <select
+                                value={selectedTag}
+                                onChange={(e) => setSelectedTag(e.target.value)}
+                                className="w-full appearance-none pl-4 pr-10 py-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/10 text-[10px] md:text-xs font-bold text-gray-600 dark:text-gray-300 cursor-pointer shadow-sm truncate"
+                            >
+                                <option value="all">Semua Tag</option>
+                                {tags.map((tag) => (
+                                    <option key={tag} value={tag}>
+                                        {tag}
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Results Count */}
-            <div className="text-center text-sm text-gray-500 dark:text-gray-500 font-medium">
-                Menampilkan {filteredDoa.length} dari {doaList.length} doa
+                {/* Info Line */}
+                <div className="mt-4 flex items-center justify-between text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest px-1">
+                    <span>{filteredDoa.length} Doa ditemukan</span>
+                </div>
             </div>
 
             {/* Doa Grid */}

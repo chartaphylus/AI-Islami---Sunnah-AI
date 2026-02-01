@@ -51,6 +51,21 @@ export default function ImamsPage() {
         return colors[id] || "from-gray-500 to-slate-500";
     };
 
+    const getFullBookName = (id: string) => {
+        const names: { [key: string]: string } = {
+            bukhari: "Shahih al-Bukhari",
+            muslim: "Shahih Muslim",
+            nasai: "Sunan an-Nasa’i",
+            "abu-daud": "Sunan Abi Dawud",
+            tirmidzi: "Sunan at-Tirmidzi",
+            "ibnu-majah": "Sunan Ibnu Majah",
+            ahmad: "Musnad Ahmad bin Hanbal",
+            darimi: "Sunan ad-Darimi",
+            malik: "Al-Muwaththa’ Imam Malik",
+        };
+        return names[id] || "";
+    };
+
     return (
         <div className="min-h-screen bg-neutral-50 dark:bg-black pt-16">
             {/* Header Sticky */}
@@ -69,7 +84,7 @@ export default function ImamsPage() {
                             Kutubut Tis'ah
                         </h1>
                         <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
-                            Pilih Imam / Perawi
+                            Pilih Kitab / Perawi
                         </p>
                     </div>
 
@@ -101,12 +116,18 @@ export default function ImamsPage() {
                                             <Book className="w-5 h-5 md:w-6 md:h-6" />
                                         </div>
                                         <div>
-                                            <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                                {book.name}
+                                            <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight mb-1">
+                                                {getFullBookName(book.id)}
                                             </h3>
-                                            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                                {book.available.toLocaleString('id-ID')} Hadits
-                                            </p>
+                                            <div className="flex items-center gap-1.5 md:gap-2">
+                                                <p className="text-[10px] md:text-xs text-gray-400 dark:text-gray-500 font-medium">
+                                                    {book.name}
+                                                </p>
+                                                <span className="w-1 h-1 rounded-full bg-gray-200 dark:bg-neutral-800 shrink-0"></span>
+                                                <p className="text-[10px] md:text-xs text-blue-500 dark:text-blue-400 font-bold">
+                                                    {book.available.toLocaleString('id-ID')} Hadits
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
 
