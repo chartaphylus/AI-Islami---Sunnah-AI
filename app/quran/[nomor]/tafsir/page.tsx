@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, BookOpen, Bookmark, Share2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, BookOpen, Bookmark, Share2, ArrowRight, ArrowLeft, Copy, Check, MessageCircle, ChevronDown, List } from 'lucide-react';
 
 interface TafsirAyat {
     ayat: number;
@@ -29,6 +29,104 @@ interface AyatReference {
     teksArab: string;
 }
 
+// Sub-component for individual Tafsir items to handle independent states
+const TafsirItem = ({
+    tafsir,
+    referenceAyat,
+    surahName
+}: {
+    tafsir: TafsirAyat,
+    referenceAyat?: AyatReference,
+    surahName: string
+}) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        const textToCopy = `*Tafsir ${surahName} Ayat ${tafsir.ayat}*\n\n${referenceAyat ? `${referenceAyat.teksArab}\n\n` : ''}*Tafsir Wajiz:*\n${tafsir.teks}\n\n_Sumber: AI Islami_`;
+        navigator.clipboard.writeText(textToCopy);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleShareWhatsApp = () => {
+        const textToShare = `*Tafsir ${surahName} Ayat ${tafsir.ayat}*\n\n${referenceAyat ? `${referenceAyat.teksArab}\n\n` : ''}*Tafsir Wajiz:*\n${tafsir.teks}\n\n_Sumber: AI Islami_`;
+        const url = `https://wa.me/?text=${encodeURIComponent(textToShare)}`;
+        window.open(url, '_blank');
+    };
+
+    return (
+        <div id={`ayat-${tafsir.ayat}`} className="group relative bg-white dark:bg-neutral-900/50 rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all scroll-mt-32">
+            {/* Decoration */}
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-emerald-500/0 via-emerald-500/50 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-l-3xl"></div>
+
+            <div className="space-y-6">
+                {/* Header: Verse Number & Reference */}
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm border border-emerald-100 dark:border-emerald-800">
+                            {tafsir.ayat}
+                        </div>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Ayat {tafsir.ayat}</span>
+                    </div>
+                </div>
+
+                {/* Arabic Reference */}
+                {referenceAyat && (
+                    <div className="bg-gray-50 dark:bg-neutral-900/50 rounded-2xl p-6 md:p-8 border border-gray-100 dark:border-neutral-800/50">
+                        <p className="font-arabic text-2xl md:text-3xl lg:text-4xl text-gray-900 dark:text-white text-right leading-[2.2] md:leading-[2.4]" dir="rtl">
+                            {referenceAyat.teksArab}
+                        </p>
+                    </div>
+                )}
+
+                {/* Tafsir Content */}
+                <div>
+                    <div className="flex items-center gap-2 mb-6">
+                        <div className="h-4 w-1 bg-emerald-500 rounded-full"></div>
+                        <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Tafsir Ringkas</h4>
+                    </div>
+
+                    <div className="prose prose-lg prose-emerald dark:prose-invert max-w-none">
+                        {tafsir.teks.split('\n').filter(p => p.trim() !== "").map((paragraph, idx) => (
+                            <p key={idx} className="text-justify leading-loose text-gray-600 dark:text-gray-300 mb-6 last:mb-0 indent-8">
+                                {paragraph}
+                            </p>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-3 pt-6 border-t border-gray-100 dark:border-neutral-800">
+                    <button
+                        onClick={handleCopy}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-all text-xs font-bold uppercase tracking-wider"
+                    >
+                        {copied ? (
+                            <>
+                                <Check className="w-4 h-4" />
+                                <span>Disalin</span>
+                            </>
+                        ) : (
+                            <>
+                                <Copy className="w-4 h-4" />
+                                <span>Salin</span>
+                            </>
+                        )}
+                    </button>
+
+                    <button
+                        onClick={handleShareWhatsApp}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-[#25D366]/10 hover:text-[#25D366] transition-all text-xs font-bold uppercase tracking-wider"
+                    >
+                        <MessageCircle className="w-4 h-4" />
+                        <span>WhatsApp</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function TafsirPage() {
     const params = useParams();
     const router = useRouter();
@@ -37,6 +135,7 @@ export default function TafsirPage() {
     const [tafsirData, setTafsirData] = useState<SurahTafsir | null>(null);
     const [ayatRefs, setAyatRefs] = useState<AyatReference[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedAyat, setSelectedAyat] = useState<string>("");
 
     useEffect(() => {
         const fetchTafsir = async () => {
@@ -58,6 +157,17 @@ export default function TafsirPage() {
 
         if (nomor) fetchTafsir();
     }, [nomor]);
+
+    const handleAyatChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const ayat = e.target.value;
+        setSelectedAyat(ayat);
+        if (ayat) {
+            const element = document.getElementById(`ayat-${ayat}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    };
 
     if (loading) {
         return (
@@ -130,60 +240,15 @@ export default function TafsirPage() {
                 </div>
 
                 {/* Tafsir List */}
-                <div className="space-y-8 md:space-y-12">
-                    {tafsirData.tafsir.map((t, index) => {
-                        const referenceAyat = ayatRefs.find(a => a.nomorAyat === t.ayat);
-
-                        return (
-                            <div
-                                key={t.ayat}
-                                className="group relative"
-                            >
-                                {/* Verse Indicator */}
-                                <div className="absolute -left-2 md:-left-4 top-0 bottom-0 w-1 bg-emerald-500/10 group-hover:bg-emerald-500 transition-colors rounded-full"></div>
-
-                                <div className="pl-6 md:pl-8 space-y-6">
-                                    {/* Verse Reference */}
-                                    {referenceAyat && (
-                                        <div className="bg-gray-50 dark:bg-neutral-900/30 rounded-2xl p-6 border border-gray-100 dark:border-neutral-800/50 mb-4 transition-all group-hover:bg-white dark:group-hover:bg-neutral-900 shadow-sm group-hover:shadow-md">
-                                            <div className="flex items-center gap-3 mb-4">
-                                                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                                                    {t.ayat}
-                                                </div>
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Referensi Ayat</span>
-                                            </div>
-                                            <p className="font-arabic text-2xl md:text-3xl text-gray-900 dark:text-white text-right leading-[2.2]" dir="rtl">
-                                                {referenceAyat.teksArab}
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {/* Tafsir Content */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-6 h-[2px] bg-emerald-500/30 rounded-full group-hover:w-10 transition-all"></span>
-                                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">Tafsir Wajiz</span>
-                                        </div>
-                                        <div className="prose prose-lg prose-emerald dark:prose-invert max-w-none">
-                                            <p className="text-gray-800 dark:text-gray-200 leading-[2] text-lg font-medium selection:bg-emerald-100 dark:selection:bg-emerald-900/40">
-                                                {t.teks}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Actions */}
-                                    <div className="flex items-center gap-4 pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="text-[10px] font-bold text-gray-400 hover:text-emerald-500 flex items-center gap-1.5 uppercase tracking-tight">
-                                            <Bookmark className="w-3.5 h-3.5" /> Simpan
-                                        </button>
-                                        <button className="text-[10px] font-bold text-gray-400 hover:text-emerald-500 flex items-center gap-1.5 uppercase tracking-tight">
-                                            <Share2 className="w-3.5 h-3.5" /> Bagikan
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
+                <div className="space-y-8">
+                    {tafsirData.tafsir.map((t) => (
+                        <TafsirItem
+                            key={t.ayat}
+                            tafsir={t}
+                            referenceAyat={ayatRefs.find(a => a.nomorAyat === t.ayat)}
+                            surahName={tafsirData.namaLatin}
+                        />
+                    ))}
                 </div>
 
                 {/* Navigation Bottom */}
@@ -219,6 +284,34 @@ export default function TafsirPage() {
                     ) : (<div></div>)}
                 </div>
             </main>
+
+            {/* Floating Navigation Dropdown */}
+            {/* Positioned at bottom-right, adjusted for mobile navbar height if necessary (usually ~64px) */}
+            <div className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="relative group">
+                    <div className="absolute inset-0 bg-emerald-500 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                    <div className="relative flex items-center bg-white dark:bg-neutral-900 rounded-full shadow-2xl border border-gray-100 dark:border-neutral-800 p-1">
+                        <div className="pl-4 pr-2 flex flex-col justify-center">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Loncat ke</span>
+                        </div>
+                        <div className="relative">
+                            <select
+                                value={selectedAyat}
+                                onChange={handleAyatChange}
+                                className="appearance-none w-full bg-transparent pl-2 pr-10 py-2 text-sm font-bold text-gray-900 dark:text-white focus:outline-none cursor-pointer"
+                            >
+                                <option value="">Pilih Ayat</option>
+                                {tafsirData.tafsir.map((t) => (
+                                    <option key={t.ayat} value={t.ayat}>Ayat {t.ayat}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none pr-3">
+                                <List className="w-4 h-4 text-emerald-500" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

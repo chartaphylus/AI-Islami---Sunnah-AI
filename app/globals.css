@@ -61,6 +61,12 @@
     font-family: var(--font-sans), sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    @apply select-none; /* Disable text selection generally */
+  }
+
+  /* Allow text selection in inputs and textareas */
+  input, textarea {
+    @apply select-text;
   }
 }
 

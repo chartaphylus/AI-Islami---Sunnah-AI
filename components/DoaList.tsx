@@ -100,42 +100,55 @@ export default function DoaList({ doaList }: DoaListProps) {
             </div>
 
             {/* Doa Grid */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredDoa.map((doa) => (
                     <Link
                         key={doa.id}
                         href={`/doa/${doa.id}`}
-                        className="group flex flex-col bg-white dark:bg-[#0a0a0a] rounded-[2rem] border border-gray-100 dark:border-neutral-800 overflow-hidden hover:border-emerald-500/50 transition-all duration-300 hover:-translate-y-1 shadow-sm"
+                        className="group relative flex flex-col justify-between bg-white dark:bg-[#0a0a0a] rounded-2xl border border-gray-200/60 dark:border-neutral-800 p-5 hover:border-emerald-500/30 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                     >
-                        {/* Card Header */}
-                        <div className="p-8 pb-0 space-y-4">
-                            <h3 className="text-xl font-bold text-emerald-600 dark:text-emerald-500 leading-tight">
-                                {doa.nama}
-                            </h3>
+                        {/* Decorative Background Accent */}
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-900/10 rounded-bl-full -mr-6 -mt-6 transition-transform group-hover:scale-110 duration-500" />
 
-                            <div className="inline-block px-4 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-                                {doa.grup}
+                        {/* Top Section */}
+                        <div className="relative space-y-3 z-10">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="space-y-1.5 flex-1">
+                                    {/* Category Label */}
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                                            {doa.grup}
+                                        </span>
+                                    </div>
+                                    {/* Title */}
+                                    <h3 className="font-bold text-lg text-gray-900 dark:text-white leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                                        {doa.nama}
+                                    </h3>
+                                </div>
+                                {/* Arrow Icon */}
+                                <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-neutral-800 flex items-center justify-center text-gray-400 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shrink-0">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Card Content */}
-                        <div className="p-8 pt-6 flex-grow flex flex-col justify-between">
-                            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed line-clamp-4 mb-6">
-                                {doa.idn}
-                            </p>
-
-                            {/* Tags */}
-                            <div className="flex flex-wrap gap-2">
-                                {doa.tag && doa.tag.map((tag) => (
+                        {/* Bottom Section: Minimalist Tags */}
+                        {doa.tag && doa.tag.length > 0 && (
+                            <div className="relative mt-5 pt-4 border-t border-gray-100 dark:border-neutral-800/50 flex flex-wrap gap-2 z-10">
+                                {doa.tag.slice(0, 3).map((tag) => (
                                     <span
                                         key={tag}
-                                        className="px-3 py-1 bg-gray-100 dark:bg-neutral-800/50 text-gray-600 dark:text-gray-400 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                                        className="text-[10px] font-medium text-gray-400 dark:text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                                     >
-                                        {tag}
+                                        #{tag}
                                     </span>
                                 ))}
+                                {doa.tag.length > 3 && (
+                                    <span className="text-[10px] font-medium text-gray-400">+ {doa.tag.length - 3}</span>
+                                )}
                             </div>
-                        </div>
+                        )}
                     </Link>
                 ))}
             </div>

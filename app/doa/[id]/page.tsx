@@ -100,7 +100,7 @@ export default async function DoaDetailPage({
                                         <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                                             Keterangan & Sumber
                                         </h4>
-                                        <pre className="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-wrap font-sans leading-relaxed">
+                                        <pre className="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-wrap font-sans leading-relaxed break-words break-all">
                                             {doa.tentang}
                                         </pre>
                                     </div>

@@ -5,6 +5,7 @@ import React from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Check, Copy, MessageCircle } from 'lucide-react';
 
 interface Source {
     title: string;
@@ -19,6 +20,22 @@ export default function SearchUI() {
     const [sources, setSources] = useState<Source[]>([]);
     const [error, setError] = useState('');
     const [duration, setDuration] = useState<number | null>(null);
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        if (!answer) return;
+        const textToCopy = `*Pertanyaan:* ${query}\n\n*Jawaban:*\n${answer}\n\n_Sumber: Salaf.AI_`;
+        navigator.clipboard.writeText(textToCopy);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleShareWhatsApp = () => {
+        if (!answer) return;
+        const text = `*Pertanyaan:* ${query}\n\n*Jawaban:*\n${answer}\n\n_Sumber: Salaf.AI_`;
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    };
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -155,18 +172,35 @@ export default function SearchUI() {
                                     </span>
                                 )}
                             </div>
-                            <button
-                                onClick={() => {
-                                    setQuery('');
-                                    setAnswer(null);
-                                    setSources([]);
-                                    setError('');
-                                    setDuration(null);
-                                }}
-                                className="text-xs px-4 py-2 rounded-full bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-colors font-semibold tracking-wide"
-                            >
-                                PERTANYAAN BARU
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleCopy}
+                                    className="p-2.5 rounded-full bg-gray-100 dark:bg-neutral-800 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-all"
+                                    title="Salin Jawaban"
+                                >
+                                    {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                                </button>
+                                <button
+                                    onClick={handleShareWhatsApp}
+                                    className="p-2.5 rounded-full bg-gray-100 dark:bg-neutral-800 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-all"
+                                    title="Bagikan ke WhatsApp"
+                                >
+                                    <MessageCircle className="w-4 h-4" />
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        setQuery('');
+                                        setAnswer(null);
+                                        setSources([]);
+                                        setError('');
+                                        setDuration(null);
+                                    }}
+                                    className="ml-2 text-xs px-4 py-2.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors font-bold tracking-wide border border-emerald-100 dark:border-emerald-800"
+                                >
+                                    PERTANYAAN BARU
+                                </button>
+                            </div>
                         </div>
 
                         <div className="prose prose-lg prose-emerald dark:prose-invert max-w-none leading-relaxed text-gray-700 dark:text-gray-300">

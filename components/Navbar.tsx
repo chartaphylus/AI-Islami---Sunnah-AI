@@ -3,7 +3,7 @@
 import { useTheme } from "next-themes";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Moon, Sun, Home, BookOpen, Heart, Calendar } from "lucide-react";
+import { Moon, Sun, Home, BookOpen, Heart, Calendar, Book } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function Navbar() {
@@ -17,6 +17,7 @@ export default function Navbar() {
     const navItems = [
         { name: 'Home', path: '/', icon: Home },
         { name: 'Quran', path: '/quran', icon: BookOpen },
+        { name: 'Hadits', path: '/hadits', icon: Book },
         { name: 'Doa', path: '/doa', icon: Heart },
         { name: 'Calendar', path: '/calendar', icon: Calendar },
     ];

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Compass, MapPin, AlertCircle, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Compass, MapPin, AlertCircle, RefreshCw, Navigation, ShieldCheck } from 'lucide-react';
 
 export default function QiblaPage() {
     const [heading, setHeading] = useState(0);
@@ -47,11 +47,11 @@ export default function QiblaPage() {
                     const { latitude, longitude } = pos.coords;
                     setLocation({ lat: latitude, lng: longitude });
                     calculateQibla(latitude, longitude);
-                    setTimeout(() => setIsCalibrating(false), 1000);
+                    setTimeout(() => setIsCalibrating(false), 1200);
                 },
                 (err) => {
                     console.error("Location error:", err);
-                    setError("Gagal mendapatkan lokasi. Menggunakan estimasi default.");
+                    setError("Gagal mendapatkan lokasi. Menggunakan estimasi.");
                     setIsCalibrating(false);
                 },
                 { enableHighAccuracy: true }
@@ -92,156 +92,175 @@ export default function QiblaPage() {
         };
     }, []);
 
-    const isAligned = Math.abs((heading % 360) - qiblaDirection) < 5;
+    const isAligned = Math.abs(((heading + 360) % 360) - qiblaDirection) < 5;
 
     return (
-        <div className="relative min-h-screen bg-white dark:bg-neutral-950 overflow-hidden selection:bg-emerald-500/30">
-            {/* Background Decorative Elements */}
-            <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[100px]" />
-            <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-600/5 rounded-full blur-[100px]" />
+        <div className="relative min-h-screen bg-neutral-50 dark:bg-black transition-colors duration-700 overflow-hidden selection:bg-emerald-500/30">
+            {/* Subtle Gradients */}
+            <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-emerald-600/10 dark:bg-emerald-600/5 rounded-full blur-[100px] pointer-events-none" />
 
-            <div className="relative z-10 max-w-lg mx-auto min-h-screen flex flex-col px-6 pt-20 pb-12">
-                {/* Header */}
-                <div className="flex flex-col items-center text-center space-y-4 mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
-                    <Link href="/calendar" className="group self-start flex items-center gap-2 text-xs font-semibold text-gray-400 hover:text-emerald-500 transition-all">
-                        <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all">
-                            <ArrowLeft className="w-4 h-4" />
-                        </div>
-                        Kembali
-                    </Link>
+            <div className="relative z-10 max-w-lg mx-auto min-h-screen flex flex-col px-5 pt-24 pb-10">
+                {/* Compact Header */}
+                <div className="flex flex-col items-center text-center space-y-4 mb-6">
+                    <div className="w-full flex justify-between items-center px-1">
+                        <Link href="/" className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-emerald-600 transition-all">
+                            <div className="w-8 h-8 rounded-xl bg-white dark:bg-neutral-900 border border-gray-100 dark:border-white/5 flex items-center justify-center shadow-sm">
+                                <ArrowLeft className="w-4 h-4" />
+                            </div>
+                        </Link>
 
-                    <div className="pt-2">
-                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[10px] font-bold tracking-wider uppercase transition-all duration-500 ${location ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-gray-50 dark:bg-neutral-900 border-gray-100 dark:border-neutral-800 text-gray-400'}`}>
-                            <MapPin className="w-3 h-3" />
-                            {location ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : "Mencari Lokasi..."}
+                        <div className={`flex items-center gap-2 px-3 py-1 rounded-xl border text-[8px] font-black tracking-widest uppercase transition-all duration-700 ${location ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-white dark:bg-neutral-900 border-gray-100 dark:border-white/5 text-gray-400'}`}>
+                            <div className={`w-1.5 h-1.5 rounded-full ${location ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-neutral-700'}`} />
+                            {location ? `${location.lat.toFixed(2)}, ${location.lng.toFixed(2)}` : "MENUNGGU LOKASI..."}
                         </div>
                     </div>
 
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Arah Kiblat</h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[280px] leading-relaxed">
-                        Arahkan ponsel Anda ke posisi datar untuk akurasi optimal menuju Ka'bah
-                    </p>
+                    <div className="space-y-1">
+                        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">
+                            Arah <span className="text-emerald-600">Kiblat</span>
+                        </h1>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400 max-w-[220px] mx-auto leading-relaxed font-bold uppercase tracking-tight">
+                            Arahkan ponsel datar untuk akurasi optimal.
+                        </p>
+                    </div>
                 </div>
 
-                {/* Compass Visualization */}
-                <div className="flex-grow flex flex-col items-center justify-center py-8">
-                    <div className="relative group perspective-1000">
-                        {/* Glow Effect when Aligned */}
-                        <div className={`absolute inset-[-40px] rounded-full blur-[60px] transition-all duration-1000 ${isAligned ? 'bg-emerald-500/20 scale-110 opacity-100' : 'bg-emerald-500/0 scale-90 opacity-0'}`} />
+                {/* Scaled Down Compass */}
+                <div className="flex-grow flex flex-col items-center justify-center py-2">
+                    <div className="relative perspective-1000">
+                        {/* Glow Effect */}
+                        <div className={`absolute inset-[-20px] rounded-full blur-[60px] transition-all duration-1000 ${isAligned && isCompassActive ? 'bg-emerald-500/25 scale-105 opacity-100' : 'bg-emerald-500/5 scale-90 opacity-40'}`} />
 
-                        {/* Outer Ring */}
-                        <div className="relative w-72 h-72 md:w-80 md:h-80 rounded-full border-[10px] border-white dark:border-neutral-900 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] bg-gray-50/30 dark:bg-neutral-900/30 backdrop-blur-xl flex items-center justify-center overflow-hidden">
+                        {/* Dial Plate - Slightly smaller (w-64) */}
+                        <div className="relative w-64 h-64 rounded-full border-[1px] border-gray-200 dark:border-white/10 shadow-2xl bg-white dark:bg-neutral-900 flex items-center justify-center overflow-hidden">
 
-                            <div className="absolute inset-0 rounded-full shadow-inner pointer-events-none" />
-                            <div className="absolute inset-4 rounded-full border border-gray-100 dark:border-neutral-800 pointer-events-none" />
+                            {/* Inner Markings */}
+                            <div className="absolute inset-0 pointer-events-none opacity-20 dark:opacity-40">
+                                {[...Array(36)].map((_, i) => (
+                                    <div key={i} className="absolute inset-0 flex justify-center py-1.5" style={{ transform: `rotate(${i * 10}deg)` }}>
+                                        <div className={`w-[1px] ${i % 3 === 0 ? 'h-3 bg-gray-400 dark:bg-white' : 'h-1.5 bg-gray-300 dark:bg-neutral-800'}`} />
+                                    </div>
+                                ))}
+                            </div>
 
-                            {/* Rotating Compass Card */}
+                            {/* Rotating Inner Core */}
                             <div
-                                className="absolute inset-0 w-full h-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                                className="absolute inset-0 w-full h-full flex items-center justify-center transition-transform duration-500 ease-out"
                                 style={{ transform: `rotate(${-heading}deg)` }}
                             >
-                                {/* North Marking */}
-                                <div className="absolute top-4 flex flex-col items-center">
-                                    <span className="text-[10px] font-black text-red-500 dark:text-red-400 tracking-widest">N</span>
-                                    <div className="w-1 h-3 bg-red-500/30 rounded-full mt-1" />
+                                {/* North Needle */}
+                                <div className="absolute inset-0 flex flex-col items-center pt-6">
+                                    <div className="w-1 h-12 bg-gradient-to-t from-red-400 to-red-600 rounded-full" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }} />
+                                    <span className="mt-1 text-[9px] font-black text-red-600 tracking-widest">N</span>
                                 </div>
 
-                                {/* Intermediate Markings */}
-                                {[45, 90, 135, 180, 225, 270, 315].map(deg => (
-                                    <div key={deg} className="absolute inset-0 flex flex-col items-center pt-4" style={{ transform: `rotate(${deg}deg)` }}>
-                                        <span className="text-[10px] font-bold text-gray-300 dark:text-neutral-700">
-                                            {deg === 90 ? 'E' : deg === 180 ? 'S' : deg === 270 ? 'W' : ''}
+                                {/* Intermediate Markers */}
+                                {[90, 180, 270].map(deg => (
+                                    <div key={deg} className="absolute inset-0 flex flex-col items-center pt-6" style={{ transform: `rotate(${deg}deg)` }}>
+                                        <span className="text-[8px] font-black text-gray-300 dark:text-neutral-800 uppercase tracking-tighter">
+                                            {deg === 90 ? 'E' : deg === 180 ? 'S' : 'W'}
                                         </span>
-                                        <div className="w-[1px] h-2 bg-gray-200 dark:bg-neutral-800 mt-1" />
                                     </div>
                                 ))}
 
-                                {/* Fine Degree Lines */}
-                                {[...Array(72)].map((_, i) => (
-                                    <div key={i} className="absolute inset-0 flex flex-col items-center pt-2" style={{ transform: `rotate(${i * 5}deg)` }}>
-                                        <div className={`w-[1px] h-1 ${i % 9 === 0 ? 'bg-gray-400 h-2' : 'bg-gray-100 dark:bg-neutral-800'}`} />
-                                    </div>
-                                ))}
-
-                                {/* Qibla Marker (Ka'bah Icon) */}
+                                {/* Slim Qibla Marker */}
                                 <div
-                                    className="absolute inset-0 flex flex-col items-center pt-8"
+                                    className="absolute inset-0 flex flex-col items-center pt-6"
                                     style={{ transform: `rotate(${qiblaDirection}deg)` }}
                                 >
-                                    <div className="flex flex-col items-center group/kiblat">
-                                        <div className="relative">
+                                    <div className="flex flex-col items-center">
+                                        <div className="relative mt-2">
                                             <div className="absolute -inset-6 bg-emerald-500/20 rounded-full blur-xl animate-pulse" />
-                                            <div className="relative w-12 h-12 rounded-2xl bg-emerald-600 shadow-[0_8px_16px_rgba(16,185,129,0.3)] flex items-center justify-center border-2 border-white/20">
-                                                <Compass className="w-7 h-7 text-white" />
+                                            <div className={`relative w-12 h-12 rounded-2xl bg-emerald-600 shadow-lg flex items-center justify-center border-2 border-white/20 transition-transform ${isAligned ? 'scale-110' : 'scale-100'}`}>
+                                                <Navigation className="w-6 h-6 text-white rotate-45" />
                                             </div>
                                         </div>
-                                        <div className="mt-4 bg-emerald-600 text-[10px] font-black text-white px-3 py-1.5 rounded-full shadow-lg tracking-widest uppercase">KIBLAT</div>
+                                        <div className={`mt-4 transition-all ${isAligned ? 'scale-100' : 'scale-90 opacity-60'}`}>
+                                            <div className="bg-emerald-600 text-[8px] font-black text-white px-3 py-1.5 rounded-xl shadow-lg tracking-widest uppercase">KIBLAT</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="relative w-10 h-10 rounded-full bg-white dark:bg-neutral-800 shadow-xl border border-gray-100 dark:border-neutral-700 z-30 flex items-center justify-center">
-                                <div className="w-2 h-2 rounded-full bg-gray-200 dark:bg-neutral-600" />
+                            {/* Center Pin */}
+                            <div className="relative w-10 h-10 rounded-full bg-white dark:bg-neutral-800 shadow-xl border border-gray-100 dark:border-white/10 z-50 flex items-center justify-center backdrop-blur-md">
+                                <div className="w-1 h-1 rounded-full bg-emerald-500" />
                             </div>
-
-                            <div className="absolute top-[8%] w-1.5 h-16 bg-gradient-to-t from-red-400 to-red-600 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.4)] z-20" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }} />
                         </div>
                     </div>
                 </div>
 
-                {/* Footer Actions */}
-                <div className="mt-auto space-y-8 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                {/* Compact Info Section */}
+                <div className="mt-auto space-y-4 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
                     {error && (
-                        <div className="w-full p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-start gap-3 backdrop-blur-md">
-                            <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5" />
-                            <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed font-medium">{error}</p>
+                        <div className="w-full p-3 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 flex items-center gap-3">
+                            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                            <p className="text-[10px] text-red-700 dark:text-red-300 font-bold tracking-tight">{error}</p>
                         </div>
                     )}
 
-                    <div className="w-full grid grid-cols-2 gap-4">
-                        <div className="p-4 rounded-3xl bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800/50 backdrop-blur-md flex flex-col items-center space-y-1">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Kiblat</span>
-                            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{Math.round(qiblaDirection)}°</span>
+                    {/* Stats - More Compact */}
+                    <div className="w-full grid grid-cols-2 gap-3">
+                        <div className={`p-3 rounded-2xl border transition-all duration-500 flex flex-col items-center ${isAligned ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-white/50 dark:bg-neutral-900/50 border-gray-100 dark:border-white/5 backdrop-blur-xl'}`}>
+                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                                <Navigation className="w-2.5 h-2.5 text-emerald-500" />
+                                KIBLAT
+                            </span>
+                            <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 tracking-tighter">
+                                {Math.round(qiblaDirection)}°
+                            </span>
                         </div>
-                        <div className="p-4 rounded-3xl bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800/50 backdrop-blur-md flex flex-col items-center space-y-1">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Heading</span>
-                            <span className="text-2xl font-black text-amber-600 dark:text-amber-500">{Math.round(heading)}°</span>
+                        <div className="p-3 rounded-2xl bg-white/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-white/5 backdrop-blur-xl flex flex-col items-center">
+                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                                <Compass className="w-2.5 h-2.5 text-amber-500" />
+                                HEADING
+                            </span>
+                            <span className={`text-xl font-black transition-colors duration-500 tracking-tighter ${isAligned ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                {Math.round(heading)}°
+                            </span>
                         </div>
                     </div>
 
+                    {/* Slim Button (h-14) */}
                     <button
                         onClick={startCompass}
-                        className={`group relative w-full h-16 rounded-[2rem] overflow-hidden transition-all duration-300 active:scale-95 ${isCompassActive && !error ? 'cursor-default' : 'hover:shadow-2xl hover:shadow-emerald-500/20'}`}
+                        className={`group relative w-full h-14 rounded-2xl overflow-hidden transition-all duration-300 active:scale-95 shadow-lg ${isCompassActive && !error ? 'cursor-default' : 'hover:shadow-xl hover:shadow-emerald-500/20'}`}
                         disabled={isCompassActive && !error}
                     >
                         {isCompassActive && !error ? (
-                            <div className="absolute inset-0 bg-gray-100 dark:bg-neutral-900 flex items-center justify-center gap-3 text-gray-500 font-bold tracking-tight">
-                                <Compass className="w-6 h-6" />
-                                Sensor Aktif
+                            <div className="absolute inset-0 bg-white dark:bg-neutral-900 border border-emerald-500/20 flex items-center justify-center gap-2 text-emerald-600 text-[10px] font-black tracking-[0.2em] uppercase">
+                                <ShieldCheck className="w-4 h-4" />
+                                SENSOR AKTIF
                             </div>
                         ) : (
                             <>
-                                <div className="absolute inset-0 bg-emerald-600 transition-transform duration-300 group-hover:scale-105" />
-                                <div className="absolute inset-0 flex items-center justify-center gap-3 text-white font-black tracking-tight">
+                                <div className="absolute inset-0 bg-emerald-600 transition-transform group-hover:bg-emerald-500" />
+                                <div className="absolute inset-0 flex items-center justify-center gap-2 text-white font-black uppercase text-[11px] tracking-widest">
                                     {isCalibrating ? (
-                                        <RefreshCw className="w-6 h-6 animate-spin" />
+                                        <RefreshCw className="w-4 h-4 animate-spin" />
                                     ) : (
-                                        <Compass className="w-6 h-6 animate-bounce" />
+                                        <Compass className="w-4 h-4" />
                                     )}
-                                    {isCalibrating ? 'MENGKALIBRASI...' : 'AKTIFKAN KOMPAS'}
+                                    {isCalibrating ? 'KALIBRASI...' : 'AKTIFKAN KOMPAS'}
                                 </div>
                             </>
                         )}
                     </button>
 
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="h-[1px] w-12 bg-gray-100 dark:bg-neutral-800" />
-                        <p className="text-center text-[10px] text-gray-400 dark:text-neutral-500 max-w-[240px] leading-relaxed uppercase tracking-tighter">
-                            Untuk hasil terbaik, gerakan ponsel membentuk <strong className="text-gray-900 dark:text-white">ANGKA 8</strong> untuk kalibrasi sensor magnetik.
+                    {/* Mobile Instruction */}
+                    <div className="flex flex-col items-center space-y-1 pt-1 opacity-60">
+                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Saran Akurasi</span>
+                        <p className="text-[9px] text-gray-400 text-center uppercase font-bold tracking-tight">
+                            Gerakkan ponsel membentuk <strong className="text-gray-900 dark:text-white">Angka 8</strong>
                         </p>
                     </div>
                 </div>
             </div>
+
+            <style jsx global>{`
+                .perspective-1000 { perspective: 1000px; }
+            `}</style>
         </div>
     );
 }
