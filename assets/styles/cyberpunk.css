@@ -1,0 +1,85 @@
+/* Cyberpunk Era Map Styles */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+.font-cyberpunk {
+  font-family: 'Orbitron', sans-serif;
+}
+
+.font-tech {
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Neon Text */
+.text-neon-blue {
+  color: #00f3ff;
+  text-shadow: 0 0 5px #00f3ff, 0 0 10px #00f3ff;
+}
+
+.text-neon-pink {
+  color: #ff00ff;
+  text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff;
+}
+
+.text-neon-gold {
+  color: #ffd700;
+  text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700;
+}
+
+/* Glassmorphism Panel */
+.glass-panel {
+  background: rgba(10, 10, 20, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+}
+
+.glass-panel-mobile {
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(0, 243, 255, 0.5);
+  box-shadow: 0 -5px 20px rgba(0, 243, 255, 0.2);
+}
+
+/* Custom Scrollbar */
+.cyber-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.cyber-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.cyber-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 243, 255, 0.5);
+  border-radius: 3px;
+}
+
+.cyber-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #00f3ff;
+}
+
+/* Neon Marker Animation */
+@keyframes pulse-neon {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 243, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 243, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 243, 255, 0);
+  }
+}
+
+.marker-neon {
+  background-color: #00f3ff;
+  border-radius: 50%;
+  animation: pulse-neon 2s infinite;
+}
+
+/* Map Tiles Filter */
+.leaflet-tile-pane {
+  filter: contrast(1.1) saturate(1.2);
+}

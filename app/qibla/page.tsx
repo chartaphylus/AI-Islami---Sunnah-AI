@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Compass, MapPin, AlertCircle, RefreshCw, Navigation, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Compass, AlertCircle, RefreshCw, Navigation, ShieldCheck } from 'lucide-react';
 
 export default function QiblaPage() {
     const [heading, setHeading] = useState(0);
@@ -95,46 +95,47 @@ export default function QiblaPage() {
     const isAligned = Math.abs(((heading + 360) % 360) - qiblaDirection) < 5;
 
     return (
-        <div className="relative min-h-screen bg-neutral-50 dark:bg-black transition-colors duration-700 overflow-hidden selection:bg-emerald-500/30">
+        <div className="relative h-[100dvh] bg-neutral-50 dark:bg-black transition-colors duration-700 overflow-hidden selection:bg-emerald-500/30 flex flex-col">
             {/* Subtle Gradients */}
             <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-emerald-600/10 dark:bg-emerald-600/5 rounded-full blur-[100px] pointer-events-none" />
 
-            <div className="relative z-10 max-w-lg mx-auto min-h-screen flex flex-col px-5 pt-24 pb-10">
-                {/* Compact Header */}
-                <div className="flex flex-col items-center text-center space-y-4 mb-6">
-                    <div className="w-full flex justify-between items-center px-1">
-                        <Link href="/" className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-emerald-600 transition-all">
-                            <div className="w-8 h-8 rounded-xl bg-white dark:bg-neutral-900 border border-gray-100 dark:border-white/5 flex items-center justify-center shadow-sm">
-                                <ArrowLeft className="w-4 h-4" />
-                            </div>
-                        </Link>
+            {/* Header Sticky */}
+            <div className="shrink-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/5 shadow-sm">
+                <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+                    <Link href="/" className="flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition-colors font-medium group">
+                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                        <span className="hidden sm:inline">Kembali</span>
+                    </Link>
 
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-xl border text-[8px] font-black tracking-widest uppercase transition-all duration-700 ${location ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-white dark:bg-neutral-900 border-gray-100 dark:border-white/5 text-gray-400'}`}>
-                            <div className={`w-1.5 h-1.5 rounded-full ${location ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-neutral-700'}`} />
-                            {location ? `${location.lat.toFixed(2)}, ${location.lng.toFixed(2)}` : "MENUNGGU LOKASI..."}
-                        </div>
+                    <div className="text-center">
+                        <h1 className="font-bold text-gray-900 dark:text-white text-lg">Arah Qiblat</h1>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+                            Finder & Kompas
+                        </p>
                     </div>
 
-                    <div className="space-y-1">
-                        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">
-                            Arah <span className="text-emerald-600">Kiblat</span>
-                        </h1>
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400 max-w-[220px] mx-auto leading-relaxed font-bold uppercase tracking-tight">
-                            Arahkan ponsel datar untuk akurasi optimal.
-                        </p>
+                    <div className="w-5"></div>
+                </div>
+            </div>
+
+            <div className="flex-1 relative z-10 max-w-lg mx-auto w-full flex flex-col px-5 pt-4 pb-0 min-h-0">
+                {/* Location Status */}
+                <div className="shrink-0 flex justify-center mb-4">
+                    <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border text-[10px] font-black tracking-widest uppercase transition-all duration-700 ${location ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-white dark:bg-neutral-900 border-gray-100 dark:border-white/5 text-gray-400'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${location ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-neutral-700'}`} />
+                        {location ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : "MENUNGGU LOKASI..."}
                     </div>
                 </div>
 
-                {/* Scaled Down Compass */}
-                <div className="flex-grow flex flex-col items-center justify-center py-2">
-                    <div className="relative perspective-1000">
+                {/* Scaled Down Compass - Uses flex-1 to take available space */}
+                <div className="flex-1 flex flex-col items-center justify-center min-h-0">
+                    <div className="relative perspective-1000 scale-90 sm:scale-100">
                         {/* Glow Effect */}
                         <div className={`absolute inset-[-20px] rounded-full blur-[60px] transition-all duration-1000 ${isAligned && isCompassActive ? 'bg-emerald-500/25 scale-105 opacity-100' : 'bg-emerald-500/5 scale-90 opacity-40'}`} />
 
                         {/* Dial Plate - Slightly smaller (w-64) */}
                         <div className="relative w-64 h-64 rounded-full border-[1px] border-gray-200 dark:border-white/10 shadow-2xl bg-white dark:bg-neutral-900 flex items-center justify-center overflow-hidden">
-
                             {/* Inner Markings */}
                             <div className="absolute inset-0 pointer-events-none opacity-20 dark:opacity-40">
                                 {[...Array(36)].map((_, i) => (
@@ -192,7 +193,7 @@ export default function QiblaPage() {
                 </div>
 
                 {/* Compact Info Section */}
-                <div className="mt-auto space-y-4 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                <div className="shrink-0 mt-4 space-y-3 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
                     {error && (
                         <div className="w-full p-3 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 flex items-center gap-3">
                             <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
@@ -225,7 +226,7 @@ export default function QiblaPage() {
                     {/* Slim Button (h-14) */}
                     <button
                         onClick={startCompass}
-                        className={`group relative w-full h-14 rounded-2xl overflow-hidden transition-all duration-300 active:scale-95 shadow-lg ${isCompassActive && !error ? 'cursor-default' : 'hover:shadow-xl hover:shadow-emerald-500/20'}`}
+                        className={`group relative w-full h-12 rounded-2xl overflow-hidden transition-all duration-300 active:scale-95 shadow-lg ${isCompassActive && !error ? 'cursor-default' : 'hover:shadow-xl hover:shadow-emerald-500/20'}`}
                         disabled={isCompassActive && !error}
                     >
                         {isCompassActive && !error ? (

@@ -18,7 +18,7 @@ export default function PrayerStatus() {
     const nextPrayerName = prayerStatus.next ? (prayerNameMap[prayerStatus.next] || prayerStatus.next) : "...";
 
     return (
-        <div className="relative w-full overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-500 text-white shadow-2xl shadow-emerald-500/20 p-6 pt-20 md:p-8">
+        <div className="relative w-full overflow-hidden rounded-b-[2.5rem] md:rounded-[2.5rem] bg-gradient-to-br from-emerald-600 to-teal-500 text-white shadow-xl shadow-emerald-500/20 pt-40 pb-12 px-6 md:p-10 -mt-20 md:mt-0">
             {/* Background Image */}
             <div className="absolute inset-0 opacity-60 pointer-events-none">
                 <img src="/header_bg.png" alt="Mosque Background" className="w-full h-full object-cover" />

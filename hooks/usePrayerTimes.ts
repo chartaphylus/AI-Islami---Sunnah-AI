@@ -1,15 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { fetchHijriCalendar, reverseGeocode, PrayerTimesData } from '../lib/external-api';
 
-interface CalendarDay {
-    date: {
-        gregorian: { date: string; day: string; weekday: { en: string } };
-        hijri: { date: string; month: { ar: string; en: string }; year: string; day: string };
-    };
-    timings: { Fajr: string; Maghrib: string; Dhuhr: string; Asr: string; Isha: string };
-}
+interface CalendarDay extends PrayerTimesData { }
 
 export function usePrayerTimes() {
     const [calendarData, setCalendarData] = useState<CalendarDay[]>([]);
@@ -30,9 +24,7 @@ export function usePrayerTimes() {
 
                     // Reverse Geocoding
                     try {
-                        const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`);
-                        const address = res.data.address;
-                        const city = address.city || address.town || address.village || address.county || "Lokasi Saya";
+                        const city = await reverseGeocode(lat, lng);
                         setCityName(city);
                     } catch (e) {
                         console.error("Geocoding failed", e);
@@ -60,8 +52,8 @@ export function usePrayerTimes() {
             try {
                 const year = currentDate.getFullYear();
                 const month = currentDate.getMonth() + 1;
-                const res = await axios.get(`https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${location.lat}&longitude=${location.lng}&method=20`);
-                setCalendarData(res.data.data);
+                const data = await fetchHijriCalendar(year, month, location.lat, location.lng);
+                setCalendarData(data);
                 setError(null);
             } catch (err) {
                 console.error("Gagal mengambil data kalender", err);

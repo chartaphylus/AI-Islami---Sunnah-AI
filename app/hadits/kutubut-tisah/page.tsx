@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import Link from 'next/link';
-import { Book, ChevronRight, Library, ArrowLeft, ChevronLeft } from 'lucide-react';
+import { Book, ChevronRight, ArrowLeft, ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 interface HadithBook {
     name: string;
-    id: string;
+    id: string; // This corresponds to slug in Supabase
     available: number;
 }
 
@@ -20,12 +20,39 @@ export default function ImamsPage() {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const res = await axios.get('https://api.hadith.gading.dev/books');
-                if (Array.isArray(res.data.data)) {
-                    setBooks(res.data.data);
-                } else if (Array.isArray(res.data)) {
-                    setBooks(res.data);
+                const KUTUBUT_TISAH = [
+                    'bukhari', 'muslim', 'nasai', 'abudawud', 'tirmidhi',
+                    'ibnmajah', 'ahmed', 'darimi', 'malik'
+                ];
+
+                const { data, error } = await supabase
+                    .from('hadith_books')
+                    .select('*')
+                    .in('slug', KUTUBUT_TISAH)
+                    .order('id');
+
+                if (error) throw error;
+
+                // Fetch counts sequentially
+                const mappedBooks = [];
+                for (const b of (data || [])) {
+                    const { count, error: countError } = await supabase
+                        .from('hadiths')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('book_id', b.id); // Use book_id not slug
+
+                    if (countError) {
+                        console.error(`Error counting hadiths for ${b.slug}`, JSON.stringify(countError));
+                    }
+
+                    mappedBooks.push({
+                        name: b.name_en, // Use name_en
+                        id: b.slug,
+                        available: count || 0
+                    });
                 }
+
+                setBooks(mappedBooks);
             } catch (error) {
                 console.error("Gagal mengambil daftar kitab", error);
             } finally {
@@ -41,10 +68,10 @@ export default function ImamsPage() {
             bukhari: "from-blue-500 to-indigo-500",
             muslim: "from-emerald-500 to-teal-500",
             nasai: "from-orange-500 to-amber-500",
-            abudaud: "from-purple-500 to-pink-500",
-            tirmidzi: "from-red-500 to-rose-500",
-            ibnumajah: "from-cyan-500 to-sky-500",
-            ahmad: "from-lime-500 to-green-500",
+            abudawud: "from-purple-500 to-pink-500",
+            tirmidhi: "from-red-500 to-rose-500",
+            ibnmajah: "from-cyan-500 to-sky-500",
+            ahmed: "from-lime-500 to-green-500",
             darimi: "from-violet-500 to-purple-500",
             malik: "from-yellow-500 to-amber-500",
         };
@@ -56,10 +83,10 @@ export default function ImamsPage() {
             bukhari: "Shahih al-Bukhari",
             muslim: "Shahih Muslim",
             nasai: "Sunan an-Nasa’i",
-            "abu-daud": "Sunan Abi Dawud",
-            tirmidzi: "Sunan at-Tirmidzi",
-            "ibnu-majah": "Sunan Ibnu Majah",
-            ahmad: "Musnad Ahmad bin Hanbal",
+            abudawud: "Sunan Abi Dawud",
+            tirmidhi: "Sunan at-Tirmidzi",
+            ibnmajah: "Sunan Ibnu Majah",
+            ahmed: "Musnad Ahmad bin Hanbal",
             darimi: "Sunan ad-Darimi",
             malik: "Al-Muwaththa’ Imam Malik",
         };
@@ -105,7 +132,7 @@ export default function ImamsPage() {
                         {books.map((book) => (
                             <Link
                                 key={book.id}
-                                href={`/hadits/kutubut-tisah/${book.id}`}
+                                href={`/hadits/${book.id}`}
                                 className="group relative bg-white dark:bg-neutral-900 rounded-2xl md:rounded-[2rem] p-4 border border-gray-200 dark:border-neutral-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                             >
                                 <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${getBookColor(book.id)} opacity-10 rounded-bl-[3rem] group-hover:scale-110 transition-transform duration-500`}></div>
@@ -117,7 +144,7 @@ export default function ImamsPage() {
                                         </div>
                                         <div>
                                             <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight mb-1">
-                                                {getFullBookName(book.id)}
+                                                {getFullBookName(book.id) || book.name}
                                             </h3>
                                             <div className="flex items-center gap-1.5 md:gap-2">
                                                 <p className="text-[10px] md:text-xs text-gray-400 dark:text-gray-500 font-medium">
@@ -125,7 +152,7 @@ export default function ImamsPage() {
                                                 </p>
                                                 <span className="w-1 h-1 rounded-full bg-gray-200 dark:bg-neutral-800 shrink-0"></span>
                                                 <p className="text-[10px] md:text-xs text-blue-500 dark:text-blue-400 font-bold">
-                                                    {book.available.toLocaleString('id-ID')} Hadits
+                                                    {(book.available || 0).toLocaleString('id-ID')} Hadits
                                                 </p>
                                             </div>
                                         </div>

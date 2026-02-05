@@ -4,21 +4,53 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ChevronLeft, Copy, Share2, Check } from 'lucide-react';
-import arbainData from '../../Arbain-an-nawawi/arbain.json';
+import { supabase } from '@/lib/supabase';
+
+interface HadithArbain {
+    number: number;
+    title: string;
+    ar: string;
+    id: string; // translations
+}
 
 export default function ArbainDetailPage() {
     const params = useParams();
     const router = useRouter();
     const number = Number(params.number);
 
-    const [hadith, setHadith] = useState<typeof arbainData[0] | null>(null);
+    const [hadith, setHadith] = useState<HadithArbain | null>(null);
+    const [loading, setLoading] = useState(true);
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
-        const found = arbainData.find(h => h.no === number);
-        if (found) {
-            setHadith(found);
-        }
+        const fetchHadith = async () => {
+            if (!number) return;
+            setLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from('hadiths')
+                    .select('number, arab, content')
+                    .eq('book_slug', 'arbain-nawawi')
+                    .eq('number', number)
+                    .single();
+
+                if (error) throw error;
+                if (data) {
+                    setHadith({
+                        number: data.number,
+                        title: `Hadits Ke-${data.number}`,
+                        ar: data.arab,
+                        id: data.content
+                    });
+                }
+            } catch (error) {
+                console.error("Gagal mengambil data hadits", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHadith();
     }, [number]);
 
     const handleCopy = () => {
@@ -35,6 +67,17 @@ export default function ArbainDetailPage() {
         const url = `https://wa.me/?text=${encodeURIComponent(textToShare)}`;
         window.open(url, '_blank');
     };
+
+    if (loading) {
+        return (
+            <div className="flex h-screen items-center justify-center bg-white dark:bg-black">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+                    <p className="text-gray-400 font-medium animate-pulse">Membuka Hadits...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!hadith) {
         return (
@@ -65,7 +108,7 @@ export default function ArbainDetailPage() {
                             {hadith.title}
                         </h1>
                         <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
-                            Hadits No. {hadith.no}
+                            Hadits No. {hadith.number}
                         </p>
                     </div>
 

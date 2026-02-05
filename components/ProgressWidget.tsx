@@ -5,22 +5,27 @@ import Link from "next/link";
 
 export default function ProgressWidget() {
     return (
-        <div className="w-full bg-white dark:bg-neutral-900 rounded-2xl p-4 md:p-5 border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between gap-4 group hover:border-emerald-500/30 transition-all">
-            <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                    <BookOpen className="w-6 h-6" />
-                </div>
-                <div>
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                        Lanjut Mengaji
-                    </h3>
-                </div>
-            </div>
+        <div className="w-full relative overflow-hidden bg-white dark:bg-neutral-900 rounded-[1.5rem] px-5 py-3 border border-gray-100 dark:border-white/5 group">
+            {/* Background Gradient/Glow - Adaptive */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
 
-            <Link href="/quran" className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all active:scale-95 shadow-lg shadow-emerald-500/20">
-                <span>Buka</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
+            <div className="relative z-10 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl border border-emerald-500/20 dark:border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-500 bg-emerald-50 dark:bg-emerald-500/5 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                        <BookOpen className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h3 className="text-base md:text-lg text-gray-900 dark:text-white font-serif tracking-wide italic whitespace-nowrap">
+                            Lanjut Mengaji
+                        </h3>
+                    </div>
+                </div>
+
+                <Link href="/quran" className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all active:scale-95 shadow-[0_0_20px_rgba(5,150,105,0.3)] hover:shadow-[0_0_25px_rgba(5,150,105,0.5)]">
+                    <span>Buka</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+            </div>
         </div>
     );
 }

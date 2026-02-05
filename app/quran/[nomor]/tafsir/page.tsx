@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, BookOpen, Bookmark, Share2, ArrowRight, ArrowLeft, Copy, Check, MessageCircle, ChevronDown, List } from 'lucide-react';
+import { ChevronLeft, BookOpen, Check, Copy, MessageCircle, List, ArrowLeft, ArrowRight } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { fetchSurahTafsir } from '@/lib/external-api';
 
 interface TafsirAyat {
     ayat: number;
@@ -42,14 +43,14 @@ const TafsirItem = ({
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
-        const textToCopy = `*Tafsir ${surahName} Ayat ${tafsir.ayat}*\n\n${referenceAyat ? `${referenceAyat.teksArab}\n\n` : ''}*Tafsir Wajiz:*\n${tafsir.teks}\n\n_Sumber: AI Islami_`;
+        const textToCopy = `*Tafsir ${surahName} Ayat ${tafsir.ayat}*\n\n${referenceAyat ? `${referenceAyat.teksArab}\n\n` : ''}*Tafsir Ringkas:*\n${tafsir.teks}\n\n_Sumber: AI Islami_`;
         navigator.clipboard.writeText(textToCopy);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
     const handleShareWhatsApp = () => {
-        const textToShare = `*Tafsir ${surahName} Ayat ${tafsir.ayat}*\n\n${referenceAyat ? `${referenceAyat.teksArab}\n\n` : ''}*Tafsir Wajiz:*\n${tafsir.teks}\n\n_Sumber: AI Islami_`;
+        const textToShare = `*Tafsir ${surahName} Ayat ${tafsir.ayat}*\n\n${referenceAyat ? `${referenceAyat.teksArab}\n\n` : ''}*Tafsir Ringkas:*\n${tafsir.teks}\n\n_Sumber: AI Islami_`;
         const url = `https://wa.me/?text=${encodeURIComponent(textToShare)}`;
         window.open(url, '_blank');
     };
@@ -130,24 +131,109 @@ const TafsirItem = ({
 export default function TafsirPage() {
     const params = useParams();
     const router = useRouter();
-    const nomor = params.nomor;
+    const nomor = Number(params.nomor);
 
     const [tafsirData, setTafsirData] = useState<SurahTafsir | null>(null);
     const [ayatRefs, setAyatRefs] = useState<AyatReference[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedAyat, setSelectedAyat] = useState<string>("");
 
+    // Support picking edition if multiple
+    const [availableEditions, setAvailableEditions] = useState<string[]>([]);
+    const [selectedEdition, setSelectedEdition] = useState<string>("");
+
     useEffect(() => {
         const fetchTafsir = async () => {
+            if (!nomor) return;
             setLoading(true);
             try {
-                const [tafsirRes, surahRes] = await Promise.all([
-                    axios.get(`https://equran.id/api/v2/tafsir/${nomor}`),
-                    axios.get(`https://equran.id/api/v2/surat/${nomor}`)
-                ]);
+                // 1. Fetch from equran.id API first
+                const apiTafsir = await fetchSurahTafsir(nomor);
 
-                setTafsirData(tafsirRes.data.data);
-                setAyatRefs(surahRes.data.data.ayat);
+                // 2. Fetch from Supabase for additional editions
+                const { data: tafsirRaw, error: tafsirError } = await supabase
+                    .from('tafsir_quran')
+                    .select('*')
+                    .eq('surah_id', nomor);
+
+                if (tafsirError) throw tafsirError;
+
+                // 3. Fetch Surah Metadata (for navigation and names)
+                const { data: allSurahs } = await supabase
+                    .from('daftar_surah')
+                    .select('*')
+                    .order('id_surah');
+
+                const currentSurahMeta = allSurahs?.find((s: any) => s.id_surah === nomor);
+                const prevSurah = allSurahs?.find((s: any) => s.id_surah === nomor - 1);
+                const nextSurah = allSurahs?.find((s: any) => s.id_surah === nomor + 1);
+
+                // 4. Fetch Verses for Reference (Arabic text)
+                const { data: versesData, error: versesError } = await supabase
+                    .from('ayat_quran')
+                    .select('verse_number, text_ar')
+                    .eq('surah_id', nomor)
+                    .order('verse_number');
+
+                if (versesError) throw versesError;
+
+                // Handle Editions Merge
+                const supabaseEditions = Array.from(new Set(tafsirRaw?.map(t => t.edition_id) || [])) as string[];
+                const allEditions = ["Kemenag (equran.id)", ...supabaseEditions];
+                setAvailableEditions(allEditions);
+
+                let currentEdition = selectedEdition;
+                if (!currentEdition && allEditions.length > 0) {
+                    currentEdition = allEditions[0];
+                    setSelectedEdition(currentEdition);
+                }
+
+                let parsedTafsir: TafsirAyat[] = [];
+
+                if (currentEdition === "Kemenag (equran.id)") {
+                    parsedTafsir = apiTafsir.tafsir.map((t: any) => ({
+                        ayat: t.ayat,
+                        teks: t.teks
+                    }));
+                } else {
+                    const editionData = tafsirRaw?.find(t => t.edition_id === currentEdition);
+                    if (editionData && editionData.content) {
+                        const content = editionData.content;
+                        if (Array.isArray(content)) {
+                            parsedTafsir = content.map((item: any, idx: number) => ({
+                                ayat: item.verse || idx + 1,
+                                teks: item.text || item
+                            }));
+                        } else if (typeof content === 'object') {
+                            parsedTafsir = Object.keys(content).map(key => ({
+                                ayat: Number(key),
+                                teks: content[key]
+                            }));
+                        }
+                    }
+                }
+
+                // Sort by ayat
+                parsedTafsir.sort((a, b) => a.ayat - b.ayat);
+
+                setTafsirData({
+                    nomor: apiTafsir.nomor || nomor,
+                    nama: apiTafsir.nama || currentSurahMeta?.title_ar || "",
+                    namaLatin: apiTafsir.namaLatin || currentSurahMeta?.title || "",
+                    jumlahAyat: apiTafsir.jumlahAyat || currentSurahMeta?.verse_count || 0,
+                    tempatTurun: apiTafsir.tempatTurun || currentSurahMeta?.place || "",
+                    arti: apiTafsir.arti || "",
+                    deskripsi: apiTafsir.deskripsi || "",
+                    tafsir: parsedTafsir,
+                    suratSebelumnya: prevSurah ? { nomor: prevSurah.id_surah, namaLatin: prevSurah.title } : null,
+                    suratSelanjutnya: nextSurah ? { nomor: nextSurah.id_surah, namaLatin: nextSurah.title } : null
+                });
+
+                setAyatRefs((versesData || []).map((v: any) => ({
+                    nomorAyat: v.verse_number,
+                    teksArab: v.text_ar
+                })));
+
             } catch (error) {
                 console.error("Gagal mengambil data tafsir", error);
             } finally {
@@ -155,8 +241,8 @@ export default function TafsirPage() {
             }
         };
 
-        if (nomor) fetchTafsir();
-    }, [nomor]);
+        fetchTafsir();
+    }, [nomor, selectedEdition]);
 
     const handleAyatChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const ayat = e.target.value;
@@ -230,25 +316,40 @@ export default function TafsirPage() {
                             </div>
                         </div>
 
-                        <div className="prose prose-emerald dark:prose-invert max-w-none">
-                            <div
-                                className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm md:text-base"
-                                dangerouslySetInnerHTML={{ __html: tafsirData.deskripsi }}
-                            />
-                        </div>
+                        {/* Edition Selector if multiple */}
+                        {availableEditions.length > 1 && (
+                            <div className="flex justify-center md:justify-start">
+                                <select
+                                    value={selectedEdition}
+                                    onChange={(e) => setSelectedEdition(e.target.value)}
+                                    className="px-4 py-2 bg-gray-50 dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 text-sm font-bold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                >
+                                    {availableEditions.map(ed => (
+                                        <option key={ed} value={ed}>{ed}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
                     </div>
                 </div>
 
                 {/* Tafsir List */}
                 <div className="space-y-8">
-                    {tafsirData.tafsir.map((t) => (
-                        <TafsirItem
-                            key={t.ayat}
-                            tafsir={t}
-                            referenceAyat={ayatRefs.find(a => a.nomorAyat === t.ayat)}
-                            surahName={tafsirData.namaLatin}
-                        />
-                    ))}
+                    {tafsirData.tafsir.length > 0 ? (
+                        tafsirData.tafsir.map((t) => (
+                            <TafsirItem
+                                key={t.ayat}
+                                tafsir={t}
+                                referenceAyat={ayatRefs.find(a => a.nomorAyat === t.ayat)}
+                                surahName={tafsirData.namaLatin}
+                            />
+                        ))
+                    ) : (
+                        <div className="text-center py-12 text-gray-500">
+                            Belum ada data tafsir untuk edisi ini.
+                        </div>
+                    )}
                 </div>
 
                 {/* Navigation Bottom */}
@@ -286,7 +387,6 @@ export default function TafsirPage() {
             </main>
 
             {/* Floating Navigation Dropdown */}
-            {/* Positioned at bottom-right, adjusted for mobile navbar height if necessary (usually ~64px) */}
             <div className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="relative group">
                     <div className="absolute inset-0 bg-emerald-500 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity"></div>

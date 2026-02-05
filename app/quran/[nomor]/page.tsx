@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     ChevronLeft, Search, Play, Pause,
-    Settings2, Volume2, Globe, Languages, MoreVertical
+    Volume2, Globe, Languages
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { fetchSurahDetail } from '@/lib/external-api';
 
 interface Ayat {
     nomorAyat: number;
@@ -37,7 +38,7 @@ interface SurahDetail extends Surah {
 export default function QuranDetail() {
     const params = useParams();
     const router = useRouter();
-    const nomor = params.nomor;
+    const nomor = Number(params.nomor);
 
     const [surah, setSurah] = useState<SurahDetail | null>(null);
     const [surahList, setSurahList] = useState<Surah[]>([]);
@@ -55,6 +56,8 @@ export default function QuranDetail() {
 
     useEffect(() => {
         const fetchData = async () => {
+            if (!nomor) return;
+
             setLoading(true);
             setIsPlayingFull(false);
             setPlayingAyat(null);
@@ -62,13 +65,82 @@ export default function QuranDetail() {
                 audioRef.current.pause();
                 audioRef.current.src = "";
             }
+
             try {
-                const [surahRes, listRes] = await Promise.all([
-                    axios.get(`https://equran.id/api/v2/surat/${nomor}`),
-                    axios.get('https://equran.id/api/v2/surat')
-                ]);
-                setSurah(surahRes.data.data);
-                setSurahList(listRes.data.data);
+                // Fetch current surah details from equran.id API
+                const apiData = await fetchSurahDetail(nomor);
+
+                // Fetch current surah details from Supabase (to keep consistency if needed)
+                const { data: surahData, error: surahError } = await supabase
+                    .from('daftar_surah')
+                    .select('*')
+                    .eq('id_surah', nomor)
+                    .single();
+
+                if (surahError) throw surahError;
+
+                // Fetch all surahs for sidebar and navigation
+                const { data: allSurahs, error: listError } = await supabase
+                    .from('daftar_surah')
+                    .select('*')
+                    .order('id_surah', { ascending: true });
+
+                if (listError) throw listError;
+
+                // Transform Surah List
+                const formattedList: Surah[] = (allSurahs || []).map((s: any) => ({
+                    nomor: s.id_surah,
+                    nama: s.title_ar,
+                    namaLatin: s.title,
+                    jumlahAyat: s.verse_count,
+                    tempatTurun: s.place,
+                    arti: ''
+                }));
+                setSurahList(formattedList);
+
+                // Navigation Logic
+                const prevSurah = allSurahs.find((s: any) => s.id_surah === nomor - 1);
+                const nextSurah = allSurahs.find((s: any) => s.id_surah === nomor + 1);
+
+                // Transform Detail combining API and Supabase
+                const formattedSurah: SurahDetail = {
+                    nomor: apiData.nomor,
+                    nama: apiData.nama,
+                    namaLatin: apiData.namaLatin,
+                    jumlahAyat: apiData.jumlahAyat,
+                    tempatTurun: apiData.tempatTurun,
+                    arti: apiData.arti,
+                    deskripsi: apiData.deskripsi,
+                    audioFull: apiData.audioFull,
+                    suratSebelumnya: apiData.suratSebelumnya ? {
+                        nomor: apiData.suratSebelumnya.nomor,
+                        nama: apiData.suratSebelumnya.nama,
+                        namaLatin: apiData.suratSebelumnya.namaLatin
+                    } : (prevSurah ? {
+                        nomor: prevSurah.id_surah,
+                        nama: prevSurah.title_ar,
+                        namaLatin: prevSurah.title
+                    } : false),
+                    suratSelanjutnya: apiData.suratSelanjutnya ? {
+                        nomor: apiData.suratSelanjutnya.nomor,
+                        nama: apiData.suratSelanjutnya.nama,
+                        namaLatin: apiData.suratSelanjutnya.namaLatin
+                    } : (nextSurah ? {
+                        nomor: nextSurah.id_surah,
+                        nama: nextSurah.title_ar,
+                        namaLatin: nextSurah.title
+                    } : false),
+                    ayat: apiData.ayat.map((a: any) => ({
+                        nomorAyat: a.nomorAyat,
+                        teksArab: a.teksArab,
+                        teksLatin: a.teksLatin,
+                        teksIndonesia: a.teksIndonesia,
+                        audio: a.audio
+                    }))
+                };
+
+                setSurah(formattedSurah);
+
             } catch (error) {
                 console.error("Gagal mengambil data", error);
             } finally {
@@ -76,10 +148,12 @@ export default function QuranDetail() {
             }
         };
 
-        if (nomor) fetchData();
+        fetchData();
     }, [nomor]);
 
     const handlePlayAudio = (url: string, ayatNum: number) => {
+        if (!url) return;
+
         if (playingAyat === ayatNum) {
             audioRef.current?.pause();
             setPlayingAyat(null);
@@ -94,14 +168,17 @@ export default function QuranDetail() {
     };
 
     const handlePlayFullAudio = () => {
-        if (!surah) return;
+        if (!surah || !surah.audioFull || !surah.audioFull[selectedQari]) {
+            alert("Audio full tidak tersedia untuk Qari ini.");
+            return;
+        }
 
         if (isPlayingFull) {
             audioRef.current?.pause();
             setIsPlayingFull(false);
         } else {
             if (audioRef.current) {
-                setPlayingAyat(null); // Stop individual ayah if playing
+                setPlayingAyat(null); // Stop individual verse audio
                 audioRef.current.src = surah.audioFull[selectedQari];
                 audioRef.current.play();
                 setIsPlayingFull(true);
@@ -272,17 +349,19 @@ export default function QuranDetail() {
                                     onChange={(e) => setSelectedQari(e.target.value)}
                                     className="appearance-none bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 py-2 pl-8 pr-8 md:py-2.5 md:pl-10 md:pr-10 rounded-xl text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 cursor-pointer"
                                 >
-                                    <option value="01">Abdullah Al-Juhany</option>
-                                    <option value="02">Abdurrahman as-Sudais</option>
-                                    <option value="03">Abu Bakr ash-Shatri</option>
-                                    <option value="04">Hani ar-Rifa'i</option>
-                                    <option value="05">Mahmoud Al-Husary</option>
+                                    <option value="01">Abdullah-Al-Juhany</option>
+                                    <option value="02">Abdul-Muhsin-Al-Qasim</option>
+                                    <option value="03">Abdurrahman-as-Sudais</option>
+                                    <option value="04">Ibrahim-Al-Dossari</option>
+                                    <option value="05">Mishary-Rashid-Alafasy</option>
                                 </select>
                                 <Volume2 className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500 pointer-events-none" />
                                 <ChevronLeft className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 -rotate-90 pointer-events-none" />
                             </div>
 
                             <div className="flex items-center gap-4 flex-nowrap border-l border-gray-100 dark:border-neutral-800 pl-4">
+                                {/* Hidden Latin toggle since no latin data */}
+                                {/* 
                                 <label className="flex items-center gap-2 cursor-pointer group flex-shrink-0">
                                     <span className={`text-[10px] font-bold uppercase tracking-tight transition-colors ${showTransliteration ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'}`}>Latin</span>
                                     <div className="relative">
@@ -291,6 +370,7 @@ export default function QuranDetail() {
                                         <div className={`absolute top-0.5 left-0.5 bg-white w-3 h-3 rounded-full transition-transform ${showTransliteration ? 'translate-x-4' : ''}`}></div>
                                     </div>
                                 </label>
+                                */}
                                 <label className="flex items-center gap-2 cursor-pointer group flex-shrink-0">
                                     <span className={`text-[10px] font-bold uppercase tracking-tight transition-colors ${showTranslation ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'}`}>Arti</span>
                                     <div className="relative">
@@ -302,12 +382,13 @@ export default function QuranDetail() {
                             </div>
                         </div>
 
+                        {/* Full Audio Button - Disabled/Alert for now */}
                         <button
                             onClick={handlePlayFullAudio}
-                            className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 border-l border-gray-100 dark:border-neutral-800 font-bold text-xs md:text-sm transition-all ${isPlayingFull ? 'text-emerald-500 bg-emerald-500/5' : 'text-emerald-600 dark:text-emerald-400 hover:opacity-80'}`}
+                            className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 border-l border-gray-100 dark:border-neutral-800 font-bold text-xs md:text-sm transition-all ${isPlayingFull ? 'text-emerald-500' : 'text-gray-500 hover:text-emerald-500'}`}
                         >
                             {isPlayingFull ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                            {isPlayingFull ? 'Stop Audio' : 'Play Audio'}
+                            {isPlayingFull ? 'Playing' : 'Play All'}
                         </button>
                     </div>
 
@@ -337,13 +418,14 @@ export default function QuranDetail() {
                                                     {a.nomorAyat}
                                                 </div>
                                             </div>
-                                            <p className="font-arabic text-4xl md:text-6xl text-gray-900 dark:text-white text-right leading-[2.2] md:leading-[2.5] select-all group-hover:text-emerald-500 transition-colors duration-500 flex-grow" dir="rtl">
+                                            <p className="font-arabic text-3xl md:text-5xl lg:text-6xl text-gray-900 dark:text-white text-right leading-[2.5] md:leading-[2.8] select-all group-hover:text-emerald-500 transition-colors duration-500 flex-grow" dir="rtl">
                                                 {a.teksArab}
                                             </p>
                                         </div>
 
                                         <div className="space-y-4 md:space-y-6">
-                                            {showTransliteration && (
+                                            {/* Latin hidden if empty */}
+                                            {showTransliteration && a.teksLatin && (
                                                 <div className="flex gap-3 md:gap-4">
                                                     <Globe className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-500 mt-1 flex-shrink-0" />
                                                     <p className="text-emerald-700 dark:text-emerald-400 text-base md:text-lg font-medium italic leading-relaxed">

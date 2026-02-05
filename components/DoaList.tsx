@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Search, ChevronDown } from "lucide-react";
-import type { Doa } from "@/lib/types";
+import type { Doa } from "../lib/types";
 
 interface DoaListProps {
     doaList: Doa[];
@@ -16,13 +16,13 @@ export default function DoaList({ doaList }: DoaListProps) {
 
     // Get unique groups
     const groups = useMemo(() => {
-        const uniqueGroups = [...new Set(doaList.map((d) => d.grup))];
+        const uniqueGroups = [...new Set(doaList.map((d) => d.grup).filter((g): g is string => !!g))];
         return uniqueGroups.sort();
     }, [doaList]);
 
     // Get unique tags
     const tags = useMemo(() => {
-        const allTags = doaList.flatMap((d) => d.tag || []);
+        const allTags = doaList.flatMap((d) => d.tag || []).filter((t): t is string => !!t);
         const uniqueTags = [...new Set(allTags)];
         return uniqueTags.sort();
     }, [doaList]);
@@ -33,11 +33,13 @@ export default function DoaList({ doaList }: DoaListProps) {
             const matchesSearch =
                 searchQuery === "" ||
                 doa.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                doa.idn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (doa.idn || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
                 doa.grup.toLowerCase().includes(searchQuery.toLowerCase());
+
 
             const matchesGrup = selectedGrup === "all" || doa.grup === selectedGrup;
             const matchesTag = selectedTag === "all" || (doa.tag && doa.tag.includes(selectedTag));
+
 
             return matchesSearch && matchesGrup && matchesTag;
         });
@@ -110,7 +112,7 @@ export default function DoaList({ doaList }: DoaListProps) {
                     <Link
                         key={doa.id}
                         href={`/doa/${doa.id}`}
-                        className="group relative flex flex-col justify-between bg-white dark:bg-[#0a0a0a] rounded-2xl border border-gray-200/60 dark:border-neutral-800 p-5 hover:border-emerald-500/30 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                        className="group relative flex flex-col justify-between bg-white dark:bg-[#0a0a0a] rounded-2xl border border-gray-200/60 dark:border-neutral-800 p-5 hover:border-emerald-500/30 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 overflow-hidden active:scale-95"
                     >
                         {/* Decorative Background Accent */}
                         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-900/10 rounded-bl-full -mr-6 -mt-6 transition-transform group-hover:scale-110 duration-500" />
@@ -120,12 +122,7 @@ export default function DoaList({ doaList }: DoaListProps) {
                             <div className="flex items-start justify-between gap-4">
                                 <div className="space-y-1.5 flex-1">
                                     {/* Category Label */}
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                                            {doa.grup}
-                                        </span>
-                                    </div>
+
                                     {/* Title */}
                                     <h3 className="font-bold text-lg text-gray-900 dark:text-white leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                                         {doa.nama}

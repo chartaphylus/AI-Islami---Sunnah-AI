@@ -62,21 +62,24 @@ export default function CalculatorPage() {
     const [zakatType, setZakatType] = useState<ZakatType>('fitrah');
 
     return (
-        <div className="min-h-screen bg-neutral-50 dark:bg-black pt-20 pb-20 px-4">
+        <div className="min-h-screen bg-neutral-50 dark:bg-black px-4 pb-0">
             {/* Header */}
-            <div className="max-w-3xl mx-auto mb-8">
-                <Link href="/hadits" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-emerald-500 transition-colors mb-4">
-                    <ArrowLeft className="w-4 h-4" />
-                    Kembali ke Hadits
-                </Link>
-                <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
-                        <Calculator className="w-6 h-6" />
+            {/* Header Sticky */}
+            <div className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/5 shadow-sm mb-8">
+                <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+                    <Link href="/" className="flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition-colors font-medium group">
+                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                        <span className="hidden sm:inline">Kembali</span>
+                    </Link>
+
+                    <div className="text-center">
+                        <h1 className="font-bold text-gray-900 dark:text-white text-lg">Kalkulator Syariah</h1>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+                            Zakat & Waris
+                        </p>
                     </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Kalkulator Syariah</h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Hitung Zakat & Waris seusai Syariat Islam</p>
-                    </div>
+
+                    <div className="w-5"></div>
                 </div>
             </div>
 

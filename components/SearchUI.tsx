@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import React from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Check, Copy, MessageCircle } from 'lucide-react';
+import { Check, Copy, MessageCircle, Send, User, Bot, Sparkles, ChevronLeft, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 interface Source {
     title: string;
@@ -13,328 +15,454 @@ interface Source {
     snippet: string;
 }
 
-export default function SearchUI() {
+interface Message {
+    id: string;
+    role: 'user' | 'assistant';
+    content: string;
+    sources?: Source[];
+    cached?: boolean;
+    timestamp: Date;
+    latency?: string;
+}
+
+function SearchUIContent() {
     const [query, setQuery] = useState('');
     const [loading, setLoading] = useState(false);
-    const [answer, setAnswer] = useState<string | null>(null);
-    const [sources, setSources] = useState<Source[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [error, setError] = useState('');
-    const [duration, setDuration] = useState<number | null>(null);
-    const [copied, setCopied] = useState(false);
+    const [copiedId, setCopiedId] = useState<string | null>(null);
 
-    const handleCopy = () => {
-        if (!answer) return;
-        const textToCopy = `*Pertanyaan:* ${query}\n\n*Jawaban:*\n${answer}\n\n_Sumber: Haditha_`;
-        navigator.clipboard.writeText(textToCopy);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const searchParams = useSearchParams();
+    const hasAutoTriggered = useRef(false);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    const handleShareWhatsApp = () => {
-        if (!answer) return;
-        const text = `*Pertanyaan:* ${query}\n\n*Jawaban:*\n${answer}\n\n_Sumber: Haditha_`;
-        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages, loading]);
+
+    // Auto-Trigger Logic
+    useEffect(() => {
+        if (hasAutoTriggered.current) return;
+
+        const context = searchParams.get('context');
+        const era = searchParams.get('era');
+        const eraId = searchParams.get('era_id');
+
+        if (eraId) {
+            hasAutoTriggered.current = true;
+            setLoading(true);
+
+            axios.get(`/api/eras/${eraId}`)
+                .then(res => {
+                    const eraData = res.data;
+                    if (eraData) {
+                        const autoPrompt = `
+Buatlah rangkuman sejarah yang SANGAT LENGKAP, MENDALAM, dan KOMPREHENSIF tentang era: **${eraData.era_name} (${eraData.year_start_m} - ${eraData.year_end_m} M)**.
+
+Gunakan struktur berikut dalam jawabanmu:
+1.  **Latar Belakang & Pendirian**: Bagaimana era ini dimulai? Siapa tokoh kuncinya? Apa konteks politik saat itu?
+2.  **Masa Keemasan**: Jelaskan pencapaian terbesar di bidang ilmu pengetahuan, militer, arsitektur, dan ekonomi. Sebutkan tokoh ilmuwan atau jenderal terkenal.
+3.  **Pemimpin Utama**: Jelaskan secara detail tentang pemimpin-pemimpin berikut: ${JSON.stringify(eraData.leader_info)}. Apa kontribusi spesifik mereka?
+4.  **Peristiwa Penting**: Uraikan peristiwa-peristiwa ini secara kronologis dan dampaknya: ${JSON.stringify(eraData.key_events)}.
+5.  **Peninggalan & Warisan**: Jelaskan detail tentang peninggalan fisik (bangunan, artefak) dan non-fisik (sistem pemerintahan, karya tulis).
+6.  **Keruntuhan**: Apa penyebab utama kejatuhan era ini? Faktor internal dan eksternal.
+
+Informasi tambahan dari database: "${eraData.description}".
+
+Jawablah dengan gaya bahasa yang edukatif, mengalir, dan menarik, namun tetap akademis dan berdasarkan fakta sejarah yang valid. Gunakan formatting Markdown (seperti bold, list, quote) agar mudah dibaca.
+                        `.trim();
+
+                        // Immediate UI update
+                        const newUserMessage: Message = {
+                            id: Date.now().toString(),
+                            role: 'user',
+                            content: `Tanya AI tentang: ${eraData.era_name}`, // Show shorter text to user? OR show full prompt. User requested "Prompt ringkasan data era".
+                            timestamp: new Date()
+                        };
+                        setMessages([newUserMessage]);
+
+                        // Execute Search with full prompt hidden or visible? 
+                        // Logic below sends 'autoPrompt' as content.
+                        return axios.post('/api/search', { messages: [{ role: 'user', content: autoPrompt }] });
+                    }
+                })
+                .then(response => {
+                    if (response && !response.data.error) {
+                        const aiMessage: Message = {
+                            id: (Date.now() + 1).toString(),
+                            role: 'assistant',
+                            content: response.data.answer,
+                            sources: response.data.sources || [],
+                            cached: response.data.cached,
+                            timestamp: new Date(),
+                            latency: response.data.latency
+                        };
+                        setMessages(prev => [...prev, aiMessage]);
+                    }
+                })
+                .catch(err => {
+                    setError("Gagal memuat informasi era.");
+                    console.error(err);
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
+
+        } else if (context === 'history' && era) {
+            hasAutoTriggered.current = true;
+            const autoPrompt = `Jelaskan sejarah lengkap dan mendalam tentang era ${era}, mencakup pencapaian, kepemimpinan, dan warisannya dalam peradaban Islam. Berikan referensi yang valid.`;
+
+            // Immediate UI update
+            const newUserMessage: Message = {
+                id: Date.now().toString(),
+                role: 'user',
+                content: autoPrompt,
+                timestamp: new Date()
+            };
+            setMessages([newUserMessage]);
+            setLoading(true);
+
+            // Execute Search
+            (async () => {
+                try {
+                    const response = await axios.post('/api/search', { messages: [{ role: 'user', content: autoPrompt }] });
+                    if (!response.data.error) {
+                        const aiMessage: Message = {
+                            id: (Date.now() + 1).toString(),
+                            role: 'assistant',
+                            content: response.data.answer,
+                            sources: response.data.sources || [],
+                            cached: response.data.cached,
+                            timestamp: new Date(),
+                            latency: response.data.latency
+                        };
+                        setMessages(prev => [...prev, aiMessage]);
+                    }
+                } catch (err) {
+                    setError("Maaf, terjadi kendala teknis saat memuat sejarah.");
+                    console.error(err);
+                } finally {
+                    setLoading(false);
+                }
+            })();
+        }
+    }, [searchParams]);
+
+    // Auto-expand textarea
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+        }
+    }, [query]);
+
+    const handleCopy = (content: string, id: string) => {
+        navigator.clipboard.writeText(content);
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
+
+    const handleShareWhatsApp = (content: string) => {
+        const url = `https://wa.me/?text=${encodeURIComponent(content)}`;
         window.open(url, '_blank');
     };
 
-    const handleSearch = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!query.trim()) return;
+    const handleSearch = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        const trimmedQuery = query.trim();
+        if (!trimmedQuery || loading) return;
 
+        const newUserMessage: Message = {
+            id: Date.now().toString(),
+            role: 'user',
+            content: trimmedQuery,
+            timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, newUserMessage]);
+        setQuery('');
         setLoading(true);
         setError('');
-        setAnswer(null);
-        setSources([]);
-        setDuration(null);
-
-        const startTime = Date.now();
 
         try {
-            const response = await axios.post('/api/search', { query });
+            const history = messages.map(msg => ({
+                role: msg.role,
+                content: msg.content
+            }));
+            history.push({ role: 'user', content: trimmedQuery });
+
+            const response = await axios.post('/api/search', { messages: history });
+
             if (response.data.error) {
                 setError(response.data.error);
             } else {
-                setAnswer(response.data.answer);
-                setSources(response.data.sources || []);
+                const aiMessage: Message = {
+                    id: (Date.now() + 1).toString(),
+                    role: 'assistant',
+                    content: response.data.answer,
+                    sources: response.data.sources || [],
+                    cached: response.data.cached,
+                    timestamp: new Date(),
+                    latency: response.data.latency
+                };
+                setMessages(prev => [...prev, aiMessage]);
             }
         } catch (err) {
-            setError("Terjadi kesalahan saat mencari jawaban. Silakan coba lagi.");
+            setError("Maaf, terjadi kendala teknis. Silakan coba sebentar lagi.");
             console.error(err);
         } finally {
-            const endTime = Date.now();
-            setDuration((endTime - startTime) / 1000);
             setLoading(false);
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSearch();
         }
     };
 
     const cleanMarkdown = (text: string) => {
         if (!text) return "";
         let cleaned = text;
-        // 1. Fix Headers
         cleaned = cleaned.replace(/^(#+)([^#\s])/gm, '$1 $2');
-        // 2. Fix Lists
         cleaned = cleaned.replace(/^([*-])([^\s])/gm, '$1 $2');
-        // 3. Remove excessive newlines
         cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
         return cleaned;
     };
 
-    // Helper to detect Arabic text
-    const isArabic = (text: string) => /[\u0600-\u06FF]/.test(text);
+    const isArabic = (text: string) => {
+        const arabicPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+        return arabicPattern.test(text);
+    };
 
     return (
-        <div className="w-full">
-            <form onSubmit={handleSearch} className="mb-8 relative group z-20">
-                <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-                <div className="relative flex items-center bg-white dark:bg-neutral-900 rounded-full shadow-xl shadow-emerald-500/5 ring-1 ring-gray-200 dark:ring-neutral-800 focus-within:ring-2 focus-within:ring-emerald-500 transition-all transform focus-within:scale-[1.01]">
-                    <div className="pl-6 text-gray-400">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <div className="flex flex-col h-full md:h-[750px] bg-white dark:bg-neutral-900 md:rounded-[2.5rem] overflow-hidden border-x border-b md:border border-gray-100 dark:border-neutral-800 shadow-2xl md:shadow-emerald-500/5">
+            {/* Internal Header */}
+            <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border-b border-gray-100 dark:border-neutral-800 z-30">
+                <div className="flex items-center gap-3">
+                    <Link href="/" className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors">
+                        <ChevronLeft className="w-5 h-5 text-gray-500" />
+                    </Link>
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                        <Bot className="w-6 h-6" />
                     </div>
-                    <input
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Apa hukum..."
-                        className="w-full py-5 px-4 bg-transparent outline-none text-lg text-gray-800 dark:text-gray-100 placeholder-gray-400"
-                    />
-                    <div className="pr-2">
-                        <button
-                            type="submit"
-                            disabled={loading || !query.trim()}
-                            className="p-3 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-600/30 transition-all disabled:opacity-70 disabled:hover:shadow-none active:scale-95"
-                        >
-                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
-                        </button>
+                    <div>
+                        <h1 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-none font-inter">Haditha AI</h1>
+                        <p className="text-[10px] text-emerald-600 font-medium mt-1 uppercase tracking-wider">Online • Manhaj Salaf</p>
                     </div>
                 </div>
-            </form>
-
-            {loading && (
-                <div className="glass-card rounded-3xl p-10 mb-6 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300">
-                    {/* Robot Animation */}
-                    <div className="relative w-32 h-32 mb-6">
-                        <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
-                            {/* Head */}
-                            <rect x="60" y="60" width="80" height="70" rx="15" className="fill-white dark:fill-neutral-800 stroke-emerald-500 stroke-2" />
-                            {/* Antenna */}
-                            <line x1="100" y1="60" x2="100" y2="40" className="stroke-emerald-500 stroke-2" />
-                            <circle cx="100" cy="35" r="6" className="fill-red-500 animate-pulse" />
-                            {/* Ears */}
-                            <rect x="50" y="80" width="10" height="30" rx="2" className="fill-emerald-200 dark:fill-emerald-900" />
-                            <rect x="140" y="80" width="10" height="30" rx="2" className="fill-emerald-200 dark:fill-emerald-900" />
-                            {/* Eyes */}
-                            <circle cx="85" cy="85" r="8" className="fill-emerald-600 dark:fill-emerald-400 animate-bounce" style={{ animationDelay: '0s' }} />
-                            <circle cx="115" cy="85" r="8" className="fill-emerald-600 dark:fill-emerald-400 animate-bounce" style={{ animationDelay: '0.2s' }} />
-                            {/* Mouth */}
-                            <path d="M 85 110 Q 100 120 115 110" fill="none" className="stroke-gray-400 dark:stroke-gray-500 stroke-2" />
-                        </svg>
-
-                        {/* Thinking Bubbles */}
-                        <div className="absolute top-0 right-0 flex gap-1 -mt-4 mr-4">
-                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce delay-75"></div>
-                            <div className="w-3 h-3 bg-emerald-500 rounded-full animate-bounce delay-150"></div>
-                            <div className="w-4 h-4 bg-emerald-600 rounded-full animate-bounce delay-300"></div>
-                        </div>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
-                        Sedang Berpikir...
-                    </h3>
-                    <p className="text-gray-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">
-                        Menganalisis pertanyaanmu dan mencari referensi yang valid.
-                    </p>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setMessages([])}
+                        className="text-[10px] md:text-xs font-bold px-3 py-2 rounded-full bg-gray-50 dark:bg-neutral-800 text-gray-500 hover:text-red-500 transition-colors"
+                    >
+                        Hapus Chat
+                    </button>
                 </div>
-            )}
+            </div>
 
-            {error && (
-                <div className="p-4 mb-6 bg-red-50 text-red-600 rounded-2xl border border-red-100 dark:bg-red-900/10 dark:text-red-400 dark:border-red-900/20 text-center animate-in fade-in slide-in-from-top-2">
-                    {error}
-                </div>
-            )}
-
-            {answer && !loading && (
-                <div className="space-y-6 pb-32 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
-                    {/* AI Answer Section */}
-                    <div className="glass-card rounded-3xl p-8 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-100/50 dark:bg-emerald-900/20 rounded-full blur-3xl -z-10 -mr-16 -mt-16 pointer-events-none"></div>
-
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="flex flex-col gap-1">
-                                <h2 className="flex items-center gap-3 text-xl font-bold text-gray-900 dark:text-white">
-                                    <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 text-xl">🤖</span>
-                                    Jawaban AI
-                                </h2>
-                                {duration && (
-                                    <span className="text-xs text-gray-400 dark:text-gray-500 font-medium ml-1">
-                                        Selesai dalam {duration.toFixed(2)} detik
-                                    </span>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={handleCopy}
-                                    className="p-2.5 rounded-full bg-gray-100 dark:bg-neutral-800 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-all"
-                                    title="Salin Jawaban"
-                                >
-                                    {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                                </button>
-                                <button
-                                    onClick={handleShareWhatsApp}
-                                    className="p-2.5 rounded-full bg-gray-100 dark:bg-neutral-800 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-all"
-                                    title="Bagikan ke WhatsApp"
-                                >
-                                    <MessageCircle className="w-4 h-4" />
-                                </button>
-
-                                <button
-                                    onClick={() => {
-                                        setQuery('');
-                                        setAnswer(null);
-                                        setSources([]);
-                                        setError('');
-                                        setDuration(null);
-                                    }}
-                                    className="ml-2 text-xs px-4 py-2.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors font-bold tracking-wide border border-emerald-100 dark:border-emerald-800"
-                                >
-                                    PERTANYAAN BARU
-                                </button>
+            {/* Chat Area */}
+            <div className="flex-grow overflow-y-auto p-4 md:p-10 space-y-6 md:space-y-8 scrollbar-thin scrollbar-thumb-gray-100 dark:scrollbar-thumb-neutral-800">
+                {messages.length === 0 && !loading && (
+                    <div className="h-full flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in duration-700">
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-emerald-500 rounded-full blur-2xl opacity-20 animate-pulse"></div>
+                            <div className="relative p-6 rounded-3xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border border-emerald-100 dark:border-emerald-800/50">
+                                <Sparkles className="w-12 h-12" />
                             </div>
                         </div>
-
-                        <div className="prose prose-lg prose-emerald dark:prose-invert max-w-none leading-relaxed text-gray-700 dark:text-gray-300">
-                            <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={{
-                                    h2: ({ node, ...props }) => {
-                                        // Check if this is the "Kesimpulan" header
-                                        const isConclusion = props.children?.toString().toLowerCase().includes('kesimpulan');
-                                        return (
-                                            <h2 className={`text-xl font-bold mt-8 mb-4 flex items-center gap-2 pb-2 border-b ${isConclusion ? 'text-emerald-800 dark:text-emerald-300 border-emerald-500' : 'text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50'}`} {...props}>
-                                                {isConclusion && <span className="text-2xl">📝</span>}
-                                                {props.children}
-                                            </h2>
-                                        );
-                                    },
-                                    strong: ({ node, ...props }) => <strong className="font-bold text-emerald-700 dark:text-emerald-400" {...props} />,
-                                    ul: ({ node, ...props }) => <ul className="list-disc list-outside ml-5 space-y-2 mb-4 text-left text-gray-700 dark:text-gray-300" {...props} />,
-                                    ol: ({ node, ...props }) => <ol className="list-decimal list-outside ml-5 space-y-2 mb-4 text-left text-gray-700 dark:text-gray-300" {...props} />,
-                                    li: ({ node, ...props }) => <li className="pl-1" {...props} />,
-                                    p: ({ node, children, ...props }) => {
-                                        // Helper: Determine if text is PURELY/DOMINANTLY Arabic (e.g. > 85% chars are Arabic)
-                                        // This prevents mixed paragraphs (Arabic + Translation) from being treated as a single Arabic block.
-                                        const getArabicRatio = (text: string) => {
-                                            const arabicMatches = text.match(/[\u0600-\u06FF]/g);
-                                            return arabicMatches ? arabicMatches.length / text.length : 0;
-                                        };
-
-                                        // Flatten children to text for analysis
-                                        const textContent = Array.isArray(children)
-                                            ? children.map(c => typeof c === 'string' ? c : (c?.props?.children || '')).join('')
-                                            : (typeof children === 'string' ? children : '');
-
-                                        // Stricter threshold: 85% Arabic to be considered a full Arabic Block
-                                        const isBlockArabic = getArabicRatio(textContent) > 0.85 && textContent.length > 5;
-
-                                        // Case 1: Pure Arabic Block (Verse/Hadith only)
-                                        if (isBlockArabic) {
-                                            return (
-                                                <p className="font-arabic text-2xl md:text-3xl text-right leading-[2.2] md:leading-[2.5] text-gray-900 dark:text-white font-normal my-8 px-5 py-4 border-r-4 border-emerald-500 bg-emerald-50/30 dark:bg-emerald-900/10 rounded-l-2xl shadow-sm" dir="rtl" {...props}>
-                                                    {children}
-                                                </p>
-                                            );
-                                        }
-
-                                        // Case 2: Mixed Content (Indonesian with Inline or Block Arabic segments)
-                                        const renderMixed = (content: any): React.ReactNode => {
-                                            if (typeof content === 'string') {
-                                                // Split by Arabic sequences
-                                                // The regex captures Arabic+Space to keep sentences together, but treats punctuation as separators if needed
-                                                // Actually, splitting by just arabic chars + space is usually safe enough for inline citation
-                                                const parts = content.split(/([\u0600-\u06FF\s]+)/g);
-
-                                                return parts.map((part, i) => {
-                                                    // Check if this part has significant Arabic chars
-                                                    if (/[\u0600-\u06FF]/.test(part) && part.trim().length > 1) {
-                                                        return <span key={i} className="font-arabic text-xl px-1.5 leading-normal inline-block text-emerald-700 dark:text-emerald-400" dir="rtl">{part}</span>;
-                                                    }
-                                                    return part;
-                                                });
-                                            }
-                                            if (Array.isArray(content)) {
-                                                return content.map((c, i) => <React.Fragment key={i}>{renderMixed(c)}</React.Fragment>);
-                                            }
-                                            if (content?.props?.children) {
-                                                return React.cloneElement(content, {
-                                                    ...content.props,
-                                                    children: renderMixed(content.props.children)
-                                                });
-                                            }
-                                            return content;
-                                        };
-
-                                        return <p className="text-left text-gray-700 dark:text-gray-300 mb-4 leading-relaxed" {...props}>{renderMixed(children)}</p>;
-                                    },
-                                    blockquote: ({ node, ...props }) => {
-                                        return (
-                                            <div className="my-6 pl-5 border-l-4 border-emerald-400 bg-gray-50 dark:bg-neutral-800/50 p-4 rounded-r-xl italic text-gray-600 dark:text-gray-400">
-                                                {props.children}
-                                            </div>
-                                        );
-                                    },
-                                    table: ({ node, ...props }) => (
-                                        <div className="overflow-x-auto my-6 border border-gray-100 dark:border-neutral-800 rounded-xl shadow-sm">
-                                            <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-800 text-sm" {...props} />
-                                        </div>
-                                    ),
-                                    thead: ({ node, ...props }) => <thead className="bg-gray-50 dark:bg-neutral-800/50" {...props} />,
-                                    tbody: ({ node, ...props }) => <tbody className="divide-y divide-gray-200 dark:divide-neutral-800 bg-white dark:bg-neutral-900" {...props} />,
-                                    tr: ({ node, ...props }) => <tr className="transition-colors hover:bg-gray-50 dark:hover:bg-neutral-800/50" {...props} />,
-                                    th: ({ node, ...props }) => <th className="px-6 py-4 text-left font-bold text-gray-900 dark:text-white uppercase tracking-wider text-xs whitespace-nowrap" {...props} />,
-                                    td: ({ node, ...props }) => <td className="px-6 py-4 whitespace-normal text-gray-700 dark:text-gray-300 leading-relaxed align-top" {...props} />
-                                }}
-                            >
-                                {cleanMarkdown(answer)}
-                            </ReactMarkdown>
+                        <div className="space-y-2">
+                            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white px-4">Assalamu'alaikum, Akhi/Ukhti!</p>
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto px-4">
+                                Tanyakan apa pun tentang syariah, Haditha siap membantu menjawab sesuai Al-Qur'an dan Sunnah.
+                            </p>
                         </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 max-w-lg w-full px-4">
+                            {["Apa hukum Shalat Berjamaah?", "Kapan waktu Shalat Dhuha?", "Adab kepada Orang Tua", "Tanda-tanda Hari Kiamat"].map((suggest, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => { setQuery(suggest); setTimeout(handleSearch, 10); }}
+                                    className="p-3 text-xs md:text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-neutral-800 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 border border-gray-100 dark:border-neutral-700 transition-all text-left"
+                                >
+                                    {suggest}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
-                        {/* Sources Section */}
-                        {sources && sources.length > 0 && (
-                            <div className="mt-8 pt-6 border-t border-gray-100 dark:border-neutral-800 animate-in fade-in slide-in-from-bottom-2">
-                                <h4 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
-                                    Sumber & Referensi
-                                </h4>
-                                <div className="grid gap-2">
-                                    {sources.map((source, idx) => (
-                                        <a
-                                            key={idx}
-                                            href={source.link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="group flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-neutral-800/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800"
+                {messages.map((msg) => (
+                    <div
+                        key={msg.id}
+                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-6 duration-500`}
+                    >
+                        <div className={`flex gap-3 md:gap-4 max-w-[95%] md:max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row items-start'}`}>
+                            {/* Avatar Wrapper */}
+                            <div className={`flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center shadow-lg transform transition-transform hover:scale-110 ${msg.role === 'user'
+                                ? 'bg-gradient-to-br from-emerald-600 to-teal-600 text-white'
+                                : 'bg-white dark:bg-neutral-800 text-emerald-600 border border-gray-100 dark:border-neutral-700'
+                                }`}>
+                                {msg.role === 'user' ? <User className="w-4 h-4 md:w-5 md:h-5" /> : <Bot className="w-4 h-4 md:w-5 md:h-5" />}
+                            </div>
+
+                            {/* Content Bubble */}
+                            <div className={`flex flex-col gap-1.5 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                                <div className={`relative px-4 md:px-5 py-3 md:py-4 rounded-[1.2rem] md:rounded-[1.5rem] shadow-sm transform transition-all ${msg.role === 'user'
+                                    ? 'bg-emerald-600 text-white rounded-tr-none ring-4 ring-emerald-500/10'
+                                    : 'bg-white dark:bg-neutral-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-neutral-700/50 rounded-tl-none ring-4 ring-gray-500/5'
+                                    }`}>
+                                    <div className={`prose prose-sm md:prose-base dark:prose-invert max-w-none break-words leading-relaxed ${msg.role === 'user' ? 'text-white' : ''}`}>
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                p: ({ children }) => {
+                                                    const textContent = React.Children.toArray(children).join("");
+                                                    const isAr = isArabic(textContent);
+                                                    return (
+                                                        <p
+                                                            className={`mb-4 last:mb-0 leading-relaxed text-sm md:text-base ${isAr ? 'font-arabic text-2xl md:text-3xl text-right dir-rtl leading-loose' : 'text-left'}`}
+                                                            style={isAr ? { direction: 'rtl' } : {}}
+                                                        >
+                                                            {children}
+                                                        </p>
+                                                    );
+                                                },
+                                                li: ({ children }) => <li className="mb-2 text-sm md:text-base">{children}</li>,
+                                                table: ({ children }) => <div className="overflow-x-auto my-4"><table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">{children}</table></div>,
+                                                th: ({ children }) => <th className="px-4 py-2 bg-gray-50 dark:bg-neutral-900 text-left font-bold">{children}</th>,
+                                                td: ({ children }) => <td className="px-4 py-2 border-t border-gray-100 dark:border-neutral-800">{children}</td>
+                                            }}
                                         >
-                                            <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-white dark:bg-neutral-700 text-xs font-bold text-gray-500 group-hover:text-emerald-600 shadow-sm border border-gray-100 dark:border-neutral-600">
-                                                {idx + 1}
-                                            </span>
-                                            <div className="flex-grow min-w-0">
-                                                <div className="font-semibold text-sm text-gray-900 dark:text-white truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
-                                                    {source.title}
+                                            {cleanMarkdown(msg.content)}
+                                        </ReactMarkdown>
+                                    </div>
+
+                                    {/* Action bar and Sources */}
+                                    {(msg.sources && msg.sources.length > 0) || msg.role === 'assistant' ? (
+                                        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-neutral-700/50 flex flex-col gap-3">
+                                            {/* Sources Grid */}
+                                            {msg.sources && msg.sources.length > 0 && (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {msg.sources.slice(0, 3).map((src, i) => (
+                                                        <a
+                                                            key={i}
+                                                            href={src.link}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="flex items-center gap-2 text-[9px] px-2 py-1 rounded bg-gray-50 dark:bg-neutral-900 border border-gray-100 dark:border-neutral-700 hover:border-emerald-500 hover:text-emerald-600 transition-all truncate max-w-[150px]"
+                                                        >
+                                                            <Sparkles className="w-2.5 h-2.5 flex-shrink-0" />
+                                                            {src.title}
+                                                        </a>
+                                                    ))}
                                                 </div>
-                                                <div className="text-xs text-gray-500 truncate mt-0.5">
-                                                    {source.link ? new URL(source.link).hostname : 'Referensi Teks'}
+                                            )}
+
+                                            {/* Final Actions */}
+                                            {msg.role === 'assistant' && (
+                                                <div className="flex items-center flex-wrap gap-2">
+                                                    <button onClick={() => handleCopy(msg.content, msg.id)} className="p-1.5 px-2.5 rounded-lg bg-gray-50 dark:bg-neutral-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 text-gray-400 hover:text-emerald-600 transition-all flex items-center gap-1.5 text-[10px] font-bold">
+                                                        {copiedId === msg.id ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                                        Salin
+                                                    </button>
+                                                    <button onClick={() => handleShareWhatsApp(msg.content)} className="p-1.5 px-2.5 rounded-lg bg-gray-50 dark:bg-neutral-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 text-gray-400 hover:text-emerald-600 transition-all flex items-center gap-1.5 text-[10px] font-bold">
+                                                        <MessageCircle className="w-3 h-3" />
+                                                        WhatsApp
+                                                    </button>
+                                                    {msg.latency && (
+                                                        <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-50 dark:bg-neutral-900 text-gray-400 text-[9px] font-medium border border-gray-100 dark:border-neutral-700">
+                                                            <Clock className="w-2.5 h-2.5" /> {msg.latency}s
+                                                        </span>
+                                                    )}
+                                                    {msg.cached && (
+                                                        <span className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50/50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[8px] font-black italic border border-emerald-100 dark:border-emerald-800/30">
+                                                            KILAT
+                                                        </span>
+                                                    )}
                                                 </div>
-                                            </div>
-                                            <svg className="w-4 h-4 text-gray-300 group-hover:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                                        </a>
-                                    ))}
+                                            )}
+                                        </div>
+                                    ) : null}
+                                </div>
+                                <div className="flex items-center gap-2 px-1">
+                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest opacity-70">
+                                        {msg.role === 'user' ? 'Anda' : 'Haditha'} • {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
                                 </div>
                             </div>
-                        )}
+                        </div>
                     </div>
+                ))}
+
+                {loading && (
+                    <div className="flex justify-start animate-in fade-in slide-in-from-left-4 duration-500">
+                        <div className="flex gap-3">
+                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white dark:bg-neutral-800 flex items-center justify-center text-emerald-600 border border-gray-100 dark:border-neutral-700 shadow-sm">
+                                <Bot className="w-4 h-4 md:w-5 md:h-5 animate-pulse" />
+                            </div>
+                            <div className="bg-white dark:bg-neutral-800 px-5 py-4 rounded-2xl border border-gray-100 dark:border-neutral-700 rounded-tl-none shadow-sm flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce"></div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="p-3 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 text-[10px] md:text-xs rounded-xl text-center border border-red-100 dark:border-red-900/20 animate-in shake">
+                        {error}
+                    </div>
+                )}
+
+                <div ref={messagesEndRef} className="h-4" />
+            </div>
+
+            {/* Input Area */}
+            <div className="p-4 md:p-8 bg-white dark:bg-neutral-900 border-t border-gray-100 dark:border-neutral-800 z-20">
+                <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }} className="group relative flex items-end gap-2 md:gap-3">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-[1.8rem] blur opacity-5 group-focus-within:opacity-15 transition duration-500"></div>
+                    <div className="relative flex-grow">
+                        <textarea
+                            ref={textareaRef}
+                            rows={1}
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Tanyakan fatwa, hadits, atau hukum..."
+                            className="w-full py-4 px-6 md:py-5 md:px-8 bg-gray-50 dark:bg-neutral-800/80 rounded-[1.5rem] md:rounded-[1.8rem] outline-none border border-transparent focus:border-emerald-500/50 focus:bg-white dark:focus:bg-neutral-800 transition-all text-sm md:text-base text-gray-800 dark:text-gray-100 placeholder-gray-400 shadow-inner resize-none min-h-[56px] md:min-h-[64px]"
+                            disabled={loading}
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading || !query.trim()}
+                        className="relative p-4 md:p-5 bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-[1.2rem] md:rounded-[1.5rem] hover:shadow-xl hover:shadow-emerald-500/30 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none mb-[2px]"
+                    >
+                        <Send className="w-5 h-5 md:w-6 md:h-6" />
+                    </button>
+                </form>
+                <div className="flex items-center justify-center gap-4 mt-3 md:mt-5 opacity-40">
+                    <p className="text-[8px] md:text-[10px] text-gray-400 font-bold tracking-[0.2em] uppercase">
+                        Sesuai Manhaj Salaf • Data Tervalidasi • Cepat • Akurat
+                    </p>
                 </div>
-            )}
+            </div>
         </div>
+    );
+}
+
+export default function SearchUI() {
+    return (
+        <Suspense fallback={<div className="p-12 text-center text-emerald-500 font-bold animate-pulse">Memuat Sistem AI...</div>}>
+            <SearchUIContent />
+        </Suspense>
     );
 }

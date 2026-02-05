@@ -1,18 +1,31 @@
 import Link from "next/link";
 import { ChevronLeft, BookOpen, Heart } from "lucide-react";
 import type { Doa } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
 
 async function getDoaDetail(id: string): Promise<Doa> {
-    const res = await fetch(`https://equran.id/api/doa/${id}`, {
-        next: { revalidate: 3600 },
-    });
+    const { data, error } = await supabase
+        .from('doa')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    if (!res.ok) {
+    if (error || !data) {
         throw new Error("Failed to fetch doa detail");
     }
 
-    const data = await res.json();
-    return data.data;
+    return {
+        id: data.id.toString(),
+        nama: data.nama,
+        ar: data.arabic,
+        tr: data.latin,
+        idn: data.translation,
+        judul: data.nama,
+        source: data.notes,
+        tentang: data.notes,
+        grup: data.category,
+        tag: data.tags || []
+    };
 }
 
 export default async function DoaDetailPage({
@@ -63,7 +76,7 @@ export default async function DoaDetailPage({
                         <div className="space-y-10">
                             <div className="flex flex-col items-center">
                                 <p
-                                    className="font-arabic text-4xl md:text-5xl text-gray-900 dark:text-white text-center leading-[2.5] select-all"
+                                    className="font-arabic text-3xl md:text-5xl text-gray-900 dark:text-white text-center leading-[2.5] md:leading-[2.8] select-all"
                                     dir="rtl"
                                 >
                                     {doa.ar}
@@ -71,8 +84,6 @@ export default async function DoaDetailPage({
                             </div>
 
                             {/* Action Buttons */}
-                            {/* Copy button removed as requested */}
-
                             <div className="space-y-8 pt-8 border-t border-gray-50 dark:border-neutral-800">
                                 {/* Transliteration */}
                                 <div className="space-y-3">

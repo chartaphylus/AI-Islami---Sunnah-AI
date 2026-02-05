@@ -24,6 +24,9 @@ export default function Navbar() {
 
     if (!mounted) return null;
 
+    // Hide Navbar on map, AI, article, qibla, calculator, and mufrodat pages
+    if (pathname === '/peta' || pathname === '/ai' || pathname?.startsWith('/articles') || pathname === '/qibla' || pathname === '/hadits/calculator' || pathname?.startsWith('/mufradat') || pathname === '/about' || pathname === '/quran/game' || pathname === '/hadits/game') return null;
+
     return (
         <nav className="fixed top-0 w-full z-50 transition-all duration-300 border-b border-white/10 dark:border-white/5">
             <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-md"></div>

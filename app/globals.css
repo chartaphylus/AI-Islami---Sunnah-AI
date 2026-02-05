@@ -13,7 +13,7 @@
 @theme {
   --font-sans: var(--font-jakarta);
   --font-serif: var(--font-inter);
-  --font-arabic: 'Amiri', 'LPMQ Isep Misbah', 'Traditional Arabic', serif;
+  --font-arabic: 'Amiri', 'Traditional Arabic', 'LPMQ Isep Misbah', serif;
   --font-amiri: 'Amiri', serif;
 }
 
@@ -25,6 +25,12 @@
   .custom-scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  .font-arabic-text {
+    font-family: var(--font-arabic);
+    direction: rtl;
+    line-height: 1.8;
   }
 }
 
@@ -38,6 +44,23 @@
 
 @utility text-balance {
   text-wrap: balance;
+}
+
+/* 3D Transform Utilities for Card Flip */
+@utility perspective-1000 {
+  perspective: 1000px;
+}
+
+@utility preserve-3d {
+  transform-style: preserve-3d;
+}
+
+@utility backface-hidden {
+  backface-visibility: hidden;
+}
+
+@utility rotate-y-180 {
+  transform: rotateY(180deg);
 }
 
 @layer base {
@@ -61,11 +84,13 @@
     font-family: var(--font-sans), sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    @apply select-none; /* Disable text selection generally */
+    @apply select-none;
+    /* Disable text selection generally */
   }
 
   /* Allow text selection in inputs and textareas */
-  input, textarea {
+  input,
+  textarea {
     @apply select-text;
   }
 }

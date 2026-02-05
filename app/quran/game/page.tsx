@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import {
     Trophy,
     Timer,
@@ -32,6 +32,12 @@ interface Question {
     nextAyat?: string;
 }
 
+interface SurahData {
+    id_surah: number;
+    title: string;
+    verse_count: number;
+}
+
 export default function QuranGamePage() {
     const router = useRouter();
     const [gameState, setGameState] = useState<GameState>('selection');
@@ -47,8 +53,8 @@ export default function QuranGamePage() {
     const [loadingProgress, setLoadingProgress] = useState(0);
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const surahListRef = useRef<SurahData[]>([]);
 
-    // Stop timer on cleanup
     useEffect(() => {
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
@@ -69,82 +75,105 @@ export default function QuranGamePage() {
         }, 1000);
     }, []);
 
-    const fetchQuestion = async (surahs: any[]) => {
+    const fetchQuestion = async (allSurahs: SurahData[]): Promise<Question | null> => {
         try {
-            // Pick a random surah based on difficulty
-            // Easy: Only Juz 30 (Surah 78-114)
-            // Medium: Any Surah
-            // Hard: Any Surah, but obscure content
-            let filteredSurahs = surahs;
+            // Filter Surahs based on Difficulty
+            let filteredSurahs = allSurahs;
             if (difficulty === 'easy') {
-                filteredSurahs = surahs.filter(s => s.nomor >= 78);
+                // Juz 30 approx (Surah 78-114)
+                filteredSurahs = allSurahs.filter(s => s.id_surah >= 78);
+            } else if (difficulty === 'medium') {
+                // Common Surahs (Yasin, Al-Mulk, Al-Waqiah, etc + Juz 30)
+                filteredSurahs = allSurahs.filter(s => s.id_surah >= 36 || s.id_surah === 18 || s.id_surah === 12);
             }
+            // Hard: All Surahs
 
+            // Pick Random Surah
             const randomSurah = filteredSurahs[Math.floor(Math.random() * filteredSurahs.length)];
-            const res = await axios.get(`https://equran.id/api/v2/surat/${randomSurah.nomor}`);
-            const surahData = res.data.data;
 
-            // Randomly pick an ayah
-            // For "Lanjutkan", don't pick the last ayah
-            let ayahIndex;
-            if (mode === 'lanjut') {
-                ayahIndex = Math.floor(Math.random() * (surahData.ayat.length - 1));
-            } else {
-                ayahIndex = Math.floor(Math.random() * surahData.ayat.length);
-            }
+            // Pick Random Verse Index
+            // Need to fetch verses for this surah from Supabase
+            // Optimization: We could fetch just one random verse, but to ensure valid next verse for 'lanjut' we might need logic
 
-            const pickedAyah = surahData.ayat[ayahIndex];
+            // Randomly select a verse number
+            // For 'lanjut', avoid the very last verse
+            const maxVerse = mode === 'lanjut' ? randomSurah.verse_count - 1 : randomSurah.verse_count;
+            if (maxVerse < 1) return null; // Should not happen for valid surahs
+
+            const randomVerseNum = Math.floor(Math.random() * maxVerse) + 1;
+
+            // Fetch the verse(s)
+            const { data: verses, error } = await supabase
+                .from('ayat_quran')
+                .select('verse_number, text_ar, translation_id')
+                .eq('surah_id', randomSurah.id_surah)
+                .in('verse_number', mode === 'lanjut' ? [randomVerseNum, randomVerseNum + 1] : [randomVerseNum]);
+
+            if (error || !verses || verses.length === 0) throw error;
+
+            const pickedAyah = verses.find(v => v.verse_number === randomVerseNum);
+            if (!pickedAyah) return null;
 
             let question: Question;
 
             if (mode === 'tebak') {
-                // Options are surah names
-                const distractors = surahs
-                    .filter(s => s.nomor !== randomSurah.nomor)
+                // Options are Surah Names
+                const distractors = allSurahs
+                    .filter(s => s.id_surah !== randomSurah.id_surah)
                     .sort(() => 0.5 - Math.random())
                     .slice(0, 3)
-                    .map(s => s.namaLatin);
+                    .map(s => s.title);
 
-                const options = [randomSurah.namaLatin, ...distractors].sort(() => 0.5 - Math.random());
+                const options = [randomSurah.title, ...distractors].sort(() => 0.5 - Math.random());
 
                 question = {
-                    text: pickedAyah.teksArab,
-                    translation: pickedAyah.teksIndonesia,
+                    text: pickedAyah.text_ar,
+                    translation: pickedAyah.translation_id,
                     options,
-                    correctIndex: options.indexOf(randomSurah.namaLatin),
-                    surahName: randomSurah.namaLatin,
-                    nomorAyat: pickedAyah.nomorAyat
+                    correctIndex: options.indexOf(randomSurah.title),
+                    surahName: randomSurah.title,
+                    nomorAyat: pickedAyah.verse_number
                 };
+
             } else {
-                // Lanjutkan Ayat: Options are next verses
-                const nextAyah = surahData.ayat[ayahIndex + 1];
+                // Mode Lanjut: Question is Ayah N, Answer is Ayah N+1
+                const nextAyah = verses.find(v => v.verse_number === randomVerseNum + 1);
 
-                // Get distractors from other ayahs in the same surah or nearby surahs
-                let distractors = surahData.ayat
-                    .filter((a: any) => a.nomorAyat !== nextAyah.nomorAyat && a.nomorAyat !== pickedAyah.nomorAyat)
-                    .sort(() => 0.5 - Math.random())
-                    .slice(0, 3)
-                    .map((a: any) => a.teksArab);
-
-                if (distractors.length < 3) {
-                    // If surah is too short, get distractors from another surah
-                    const otherSurahRes = await axios.get(`https://equran.id/api/v2/surat/${Math.floor(Math.random() * 114) + 1}`);
-                    distractors = [...distractors, ...otherSurahRes.data.data.ayat.slice(0, 3).map((a: any) => a.teksArab)].slice(0, 3);
+                if (!nextAyah) {
+                    // Fallback if next ayah fetch failed for some reason
+                    return null;
                 }
 
-                const optionsArr = [nextAyah.teksArab, ...distractors].sort(() => 0.5 - Math.random());
+                // Get distractors: Random verses from other places
+                // We make a separate call for distractors to ensure randomness
+                const { data: randomDistractors } = await supabase.rpc('get_random_verses', { limit_num: 3 });
+                // Since we don't have RPC, we fallback to client-side random fetch:
+                // Just fetch 3 random verses from a random surah
+                const randomDistractorSurahId = Math.floor(Math.random() * 114) + 1;
+                const { data: distractorVerses } = await supabase
+                    .from('ayat_quran')
+                    .select('text_ar')
+                    .eq('surah_id', randomDistractorSurahId)
+                    .limit(3);
+
+                let distractors = (distractorVerses || []).map(v => v.text_ar);
+                // Pad if not enough
+                if (distractors.length < 3) distractors = ["Distractor 1", "Distractor 2", "Distractor 3"]; // Should rarely happen
+
+                const optionsArr = [nextAyah.text_ar, ...distractors].sort(() => 0.5 - Math.random());
 
                 question = {
-                    text: pickedAyah.teksArab,
+                    text: pickedAyah.text_ar,
                     options: optionsArr,
-                    correctIndex: optionsArr.indexOf(nextAyah.teksArab),
-                    surahName: randomSurah.namaLatin,
-                    nomorAyat: pickedAyah.nomorAyat,
-                    nextAyat: nextAyah.teksArab
+                    correctIndex: optionsArr.indexOf(nextAyah.text_ar),
+                    surahName: randomSurah.title,
+                    nomorAyat: pickedAyah.verse_number,
+                    nextAyat: nextAyah.text_ar
                 };
             }
 
             return question;
+
         } catch (error) {
             console.error("Fetch question error:", error);
             return null;
@@ -160,12 +189,29 @@ export default function QuranGamePage() {
         setTimeLeft(180);
 
         try {
-            const res = await axios.get('https://equran.id/api/v2/surat');
-            const surahList = res.data.data;
+            // 1. Fetch Surah List if not already
+            if (surahListRef.current.length === 0) {
+                const { data, error } = await supabase
+                    .from('daftar_surah') // Changed from 'surat' per schema
+                    .select('id_surah, title, verse_count'); // Changed fields
 
+                if (error) throw error;
+                surahListRef.current = data || [];
+            }
+
+            const surahList = surahListRef.current;
             const newQuestions: Question[] = [];
+
+            // Generate 10 Questions
             for (let i = 0; i < 10; i++) {
-                const q = await fetchQuestion(surahList);
+                // Retry logic if null returned
+                let q = null;
+                let attempts = 0;
+                while (!q && attempts < 3) {
+                    q = await fetchQuestion(surahList);
+                    attempts++;
+                }
+
                 if (q) newQuestions.push(q);
                 setLoadingProgress(((i + 1) / 10) * 100);
             }
@@ -189,6 +235,7 @@ export default function QuranGamePage() {
         } catch (error) {
             console.error("Start game failed", error);
             setGameState('selection');
+            // Optionally show error toast
         }
     };
 
@@ -200,7 +247,7 @@ export default function QuranGamePage() {
 
         if (index === questions[currentIndex].correctIndex) {
             // Scoring: Base 10 + Time bonus
-            const timeBonus = Math.floor(timeLeft / 30); // Adjusted for 3 mins
+            const timeBonus = Math.floor(timeLeft / 30);
             setScore(prev => prev + 10 + timeBonus);
         }
 
@@ -234,7 +281,7 @@ export default function QuranGamePage() {
             <div className="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
                 <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
                     <button
-                        onClick={() => gameState === 'selection' ? router.push('/quran') : resetGame()}
+                        onClick={() => gameState === 'selection' ? router.push('/') : resetGame()}
                         className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 transition-all font-medium group"
                     >
                         <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
