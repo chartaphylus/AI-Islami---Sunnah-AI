@@ -43,7 +43,16 @@ Belajar agama menjadi menyenangkan dengan fitur *play-to-learn*.
 ### 6. 📖 Referensi Digital
 - **Al-Qur'an Digital**: 30 Juz lengkap dengan terjemahan dan audio.
 - **Ensiklopedia Hadits**: Akses ke ribuan hadits dari kitab-kitab induk.
-- **Kamus Mufrodat**: Ribuan kosakata bahasa Arab dikategorikan dengan rapi.
+- [x] Hadith Swipe Navigation <!-- id: 28 -->
+    - [x] Implement motion Swipe in Hadith Detail <!-- id: 29 -->
+
+### 7. ✨ Experience (UX) & Interface
+Fokus pada kenyamanan pengguna dengan detail interaksi yang halus:
+- **Swipe Navigation**: Geser kiri/kanan untuk berpindah halaman di detail Hadits.
+- **Touch Feedback**: Respons visual (haptic-like visual) saat menekan kartu di perangkat mobile.
+- **Sticky Headers**: Navigasi dan judul tetap terlihat saat menggulir halaman panjang (Quran, Tafsir, Mufrodat).
+- **Responsive Controls**: Kontrol yang menyesuaikan perangkat (Floating Bar di Mobile vs Sticky Bar di Desktop).
+- **Global Loading**: Indikator loading yang estetik untuk transisi halaman yang mulus.
 
 ---
 

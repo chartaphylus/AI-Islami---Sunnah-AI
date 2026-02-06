@@ -95,7 +95,7 @@ export default function DoaPage() {
 
                     {/* Description */}
                     <p className="text-xs md:text-base text-gray-500 dark:text-gray-400 max-w-xl mx-auto leading-relaxed px-4">
-                        Kumpulan doa harian yang dapat membantu Anda dalam beribadah dan mendekatkan diri kepada Allah SWT.
+                        Kumpulan doa harian yang dapat membantu Anda dalam beribadah dan mendekatkan diri kepada Allah
                     </p>
 
                     {/* Compact Search & Filters */}
@@ -160,7 +160,7 @@ export default function DoaPage() {
                             filteredDoa.map((doa) => (
                                 <div
                                     key={doa.id}
-                                    className="group bg-white dark:bg-neutral-900 border border-gray-200/60 dark:border-neutral-800 rounded-[2rem] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-violet-500/10 hover:border-violet-500/30 flex flex-col relative overflow-hidden"
+                                    className="group bg-white dark:bg-neutral-900 border border-gray-200/60 dark:border-neutral-800 rounded-[2rem] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-violet-500/10 hover:border-violet-500/30 flex flex-col relative overflow-hidden active:scale-[0.98] active:border-violet-500"
                                 >
                                     {/* Top Section: Info - Clickable Link */}
                                     <Link

@@ -56,7 +56,7 @@ const TafsirItem = ({
     };
 
     return (
-        <div id={`ayat-${tafsir.ayat}`} className="group relative bg-white dark:bg-neutral-900/50 rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all scroll-mt-32">
+        <div id={`ayat-${tafsir.ayat}`} className="group relative bg-white dark:bg-neutral-900/50 rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all scroll-mt-32 active:scale-[0.99] active:bg-emerald-50/50">
             {/* Decoration */}
             <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-emerald-500/0 via-emerald-500/50 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-l-3xl"></div>
 
@@ -298,6 +298,106 @@ export default function TafsirPage() {
                 </div>
             </div>
 
+            {/* Desktop Only: Sticky Sub-Header Controls */}
+            <div className="hidden md:block sticky top-16 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-sm border-b border-gray-100 dark:border-neutral-900 shadow-sm transition-all">
+                <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+
+                    {/* Tafsir Source Selector */}
+                    <div className="flex-1 min-w-0 flex items-center gap-3">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                            Pilih Kitab Tafsir:
+                        </span>
+                        <div className="relative min-w-[200px]">
+                            <select
+                                value={selectedEdition}
+                                onChange={(e) => setSelectedEdition(e.target.value)}
+                                className="w-full appearance-none bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-900 dark:text-white text-xs font-bold rounded-lg px-3 py-2 pr-8 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                            >
+                                {availableEditions.map(ed => (
+                                    <option key={ed} value={ed}>{ed}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <BookOpen className="w-3.5 h-3.5 text-gray-400" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Verse Selector */}
+                    <div className="flex-none flex items-center gap-3 justify-end">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                            Pilih Ayat:
+                        </span>
+                        <div className="relative min-w-[120px]">
+                            <select
+                                value={selectedAyat}
+                                onChange={handleAyatChange}
+                                className="w-full appearance-none bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-900 dark:text-white text-xs font-bold rounded-lg px-3 py-2 pr-8 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                            >
+                                <option value="">Semua Ayat</option>
+                                {tafsirData.tafsir.map((t) => (
+                                    <option key={t.ayat} value={t.ayat}>Ayat {t.ayat}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <List className="w-3.5 h-3.5 text-emerald-500" />
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {/* Mobile Only: Floating Bottom Controls */}
+            <div className="md:hidden fixed bottom-24 right-4 z-50 flex flex-col gap-3 items-end pointer-events-none">
+                {/* Verse Selector (Top) */}
+                <div className="pointer-events-auto flex flex-col items-end">
+                    <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 mr-1 bg-white/80 dark:bg-black/50 backdrop-blur px-2 py-0.5 rounded-md shadow-sm">
+                        Pilih Ayat
+                    </span>
+                    <div className="bg-emerald-500 text-white p-1.5 rounded-xl shadow-lg shadow-emerald-500/30 max-w-[140px]">
+                        <div className="relative">
+                            <select
+                                value={selectedAyat}
+                                onChange={handleAyatChange}
+                                className="w-full appearance-none bg-transparent text-white text-xs font-bold pl-2 pr-8 py-1.5 focus:outline-none placeholder-white/70"
+                            >
+                                <option value="" className="text-gray-900">Ayat..</option>
+                                {tafsirData.tafsir.map((t) => (
+                                    <option key={t.ayat} value={t.ayat} className="text-gray-900">Ayat {t.ayat}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <List className="w-3.5 h-3.5 text-white" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Tafsir Selector (Bottom) */}
+                <div className="pointer-events-auto flex flex-col items-end">
+                    <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 mr-1 bg-white/80 dark:bg-black/50 backdrop-blur px-2 py-0.5 rounded-md shadow-sm">
+                        Pilih Tafsir
+                    </span>
+                    <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md p-1.5 rounded-xl shadow-lg border border-gray-200 dark:border-neutral-800 max-w-[200px]">
+                        <div className="relative">
+                            <select
+                                value={selectedEdition}
+                                onChange={(e) => setSelectedEdition(e.target.value)}
+                                className="w-full appearance-none bg-transparent text-gray-900 dark:text-white text-xs font-bold pl-2 pr-8 py-1.5 focus:outline-none"
+                            >
+                                {availableEditions.map(ed => (
+                                    <option key={ed} value={ed}>{ed}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <BookOpen className="w-3.5 h-3.5 text-emerald-500" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
                 {/* Introduction Section */}
                 <div className="bg-white dark:bg-neutral-900/50 rounded-[2.5rem] p-8 md:p-12 mb-12 border border-gray-100 dark:border-neutral-800 shadow-xl shadow-black/[0.02] relative overflow-hidden group">
@@ -315,22 +415,6 @@ export default function TafsirPage() {
                                 <span>{tafsirData.arti}</span>
                             </div>
                         </div>
-
-                        {/* Edition Selector if multiple */}
-                        {availableEditions.length > 1 && (
-                            <div className="flex justify-center md:justify-start">
-                                <select
-                                    value={selectedEdition}
-                                    onChange={(e) => setSelectedEdition(e.target.value)}
-                                    className="px-4 py-2 bg-gray-50 dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 text-sm font-bold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                >
-                                    {availableEditions.map(ed => (
-                                        <option key={ed} value={ed}>{ed}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-
                     </div>
                 </div>
 
@@ -385,33 +469,6 @@ export default function TafsirPage() {
                     ) : (<div></div>)}
                 </div>
             </main>
-
-            {/* Floating Navigation Dropdown */}
-            <div className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="relative group">
-                    <div className="absolute inset-0 bg-emerald-500 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                    <div className="relative flex items-center bg-white dark:bg-neutral-900 rounded-full shadow-2xl border border-gray-100 dark:border-neutral-800 p-1">
-                        <div className="pl-4 pr-2 flex flex-col justify-center">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Loncat ke</span>
-                        </div>
-                        <div className="relative">
-                            <select
-                                value={selectedAyat}
-                                onChange={handleAyatChange}
-                                className="appearance-none w-full bg-transparent pl-2 pr-10 py-2 text-sm font-bold text-gray-900 dark:text-white focus:outline-none cursor-pointer"
-                            >
-                                <option value="">Pilih Ayat</option>
-                                {tafsirData.tafsir.map((t) => (
-                                    <option key={t.ayat} value={t.ayat}>Ayat {t.ayat}</option>
-                                ))}
-                            </select>
-                            <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none pr-3">
-                                <List className="w-4 h-4 text-emerald-500" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }

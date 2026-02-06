@@ -22,19 +22,19 @@ export default function GameHub() {
 
                 <div className="grid grid-cols-3 gap-2 md:gap-4">
                     {/* Game Al-Qur'an */}
-                    <Link href="/quran/game" className="group relative overflow-hidden bg-white dark:bg-neutral-800 border-2 border-blue-100 dark:border-blue-900 hover:border-blue-500 dark:hover:border-blue-500 text-blue-600 dark:text-blue-400 transition-all duration-300 py-3 rounded-xl flex flex-col items-center justify-center gap-1 shadow-sm active:scale-95">
+                    <Link href="/quran/game" className="group relative overflow-hidden bg-white dark:bg-neutral-800 border-2 border-blue-100 dark:border-blue-900 hover:border-blue-500 dark:hover:border-blue-500 text-blue-600 dark:text-blue-400 transition-all duration-300 py-3 rounded-xl flex flex-col items-center justify-center gap-1 shadow-sm active:scale-95 active:border-blue-500">
                         <Gamepad2 className="w-5 h-5 md:w-6 md:h-6" />
                         <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-center">Al-Qur'an</span>
                     </Link>
 
                     {/* Game Hadits */}
-                    <Link href="/hadits/game" className="group relative overflow-hidden bg-white dark:bg-neutral-800 border-2 border-amber-100 dark:border-amber-900 hover:border-amber-500 dark:hover:border-amber-500 text-amber-600 dark:text-amber-400 transition-all duration-300 py-3 rounded-xl flex flex-col items-center justify-center gap-1 shadow-sm active:scale-95">
+                    <Link href="/hadits/game" className="group relative overflow-hidden bg-white dark:bg-neutral-800 border-2 border-amber-100 dark:border-amber-900 hover:border-amber-500 dark:hover:border-amber-500 text-amber-600 dark:text-amber-400 transition-all duration-300 py-3 rounded-xl flex flex-col items-center justify-center gap-1 shadow-sm active:scale-95 active:border-amber-500">
                         <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
                         <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-center">Hadits</span>
                     </Link>
 
                     {/* Game Mufrodat */}
-                    <Link href="/mufradat/game" className="group relative overflow-hidden bg-white dark:bg-neutral-800 border-2 border-emerald-100 dark:border-emerald-900 hover:border-emerald-500 dark:hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 transition-all duration-300 py-3 rounded-xl flex flex-col items-center justify-center gap-1 shadow-sm active:scale-95">
+                    <Link href="/mufradat/game" className="group relative overflow-hidden bg-white dark:bg-neutral-800 border-2 border-emerald-100 dark:border-emerald-900 hover:border-emerald-500 dark:hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 transition-all duration-300 py-3 rounded-xl flex flex-col items-center justify-center gap-1 shadow-sm active:scale-95 active:border-emerald-500">
                         <LayoutGrid className="w-5 h-5 md:w-6 md:h-6" />
                         <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-center">Mufrodat</span>
                     </Link>

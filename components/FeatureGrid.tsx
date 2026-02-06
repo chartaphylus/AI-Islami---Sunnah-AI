@@ -49,7 +49,7 @@ export default function FeatureGrid() {
                 <Link
                     key={feature.name}
                     href={feature.href}
-                    className="group relative flex flex-col items-center justify-center p-1.5 md:p-4 bg-white dark:bg-neutral-900 rounded-xl md:rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md hover:border-emerald-500/20 transition-all active:scale-95"
+                    className="group relative flex flex-col items-center justify-center p-1.5 md:p-4 bg-white dark:bg-neutral-900 rounded-xl md:rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md hover:border-emerald-500/20 transition-all active:scale-95 active:border-emerald-500"
                 >
                     <div className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center mb-1.5 md:mb-3 ${feature.bg} ${feature.color} group-hover:scale-110 transition-transform`}>
                         <feature.icon className="w-4 h-4 md:w-6 md:h-6" />

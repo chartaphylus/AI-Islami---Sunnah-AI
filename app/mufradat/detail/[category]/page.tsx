@@ -22,7 +22,7 @@ export default function MufrodatDetailPage({ params }: { params: Promise<{ categ
     }, [decodedCategory]);
 
     return (
-        <div className="min-h-screen bg-neutral-50 dark:bg-black pt-16 pb-20">
+        <div className="min-h-screen bg-neutral-50 dark:bg-black pb-20">
             {/* Header Sticky */}
             <div className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-100 dark:border-neutral-900 shadow-sm">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -59,7 +59,7 @@ export default function MufrodatDetailPage({ params }: { params: Promise<{ categ
                         {words.map((word) => (
                             <div
                                 key={word.id}
-                                className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-100 dark:border-neutral-800 hover:border-blue-500/20 transition-all flex items-center justify-between group"
+                                className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-100 dark:border-neutral-800 hover:border-blue-500/20 transition-all flex items-center justify-between group active:scale-[0.98] active:border-blue-400"
                             >
                                 <div className="text-left">
                                     <p className="text-lg font-bold text-gray-900 dark:text-white mb-1">

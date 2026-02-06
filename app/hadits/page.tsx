@@ -125,7 +125,8 @@ export default function HadithLandingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
 
                     {/* Kutubut Tis'ah Card - Second Item */}
-                    <div className="group bg-white dark:bg-neutral-900 border border-blue-200/60 dark:border-blue-900/30 rounded-[2rem] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-blue-500/10 hover:border-blue-500/30 flex flex-col relative overflow-hidden active:scale-95">
+                    {/* Kutubut Tis'ah Card - Second Item */}
+                    <div className="group bg-white dark:bg-neutral-900 border border-blue-200/60 dark:border-blue-900/30 rounded-[2rem] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-blue-500/10 hover:border-blue-500/30 flex flex-col relative overflow-hidden active:scale-[0.98] active:border-blue-500">
                         <Link
                             href="/hadits/kutubut-tisah"
                             className="p-4 flex items-center gap-3 relative z-0 flex-grow hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
@@ -169,7 +170,7 @@ export default function HadithLandingPage() {
                         filteredBooks.map((book) => (
                             <div
                                 key={book.id}
-                                className="group bg-white dark:bg-neutral-900 border border-gray-200/60 dark:border-neutral-800 rounded-[2rem] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-emerald-500/10 hover:border-emerald-500/30 flex flex-col relative overflow-hidden active:scale-95"
+                                className="group bg-white dark:bg-neutral-900 border border-gray-200/60 dark:border-neutral-800 rounded-[2rem] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-emerald-500/10 hover:border-emerald-500/30 flex flex-col relative overflow-hidden active:scale-[0.98] active:border-emerald-500"
                             >
                                 {/* Top Section: Info - Clickable Link */}
                                 <Link
